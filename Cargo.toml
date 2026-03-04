@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 config = {version="0.15.19", features=["yaml", "json", "ron"]}
 diesel = { version = "2.2.0", features = ["postgres"] }
+postgres = "0.19.12"
 
 
 [[bin]]
