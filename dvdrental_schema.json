@@ -51,6 +51,8 @@
               "columns": [
                 "actor_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX actor_pkey ON public.actor USING btree (actor_id)"
             },
             {
@@ -60,6 +62,8 @@
               "columns": [
                 "last_name"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_actor_last_name ON public.actor USING btree (last_name)"
             }
           ],
@@ -70,13 +74,6 @@
                 "actor_id"
               ],
               "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16423_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "actor_id IS NOT NULL"
-              }
             },
             {
               "name": "2200_16423_4_not_null",
@@ -90,6 +87,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "last_name IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16423_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "actor_id IS NOT NULL"
               }
             },
             {
@@ -184,6 +188,8 @@
               "columns": [
                 "address_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX address_pkey ON public.address USING btree (address_id)"
             },
             {
@@ -193,17 +199,12 @@
               "columns": [
                 "city_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_city_id ON public.address USING btree (city_id)"
             }
           ],
           "constraints": [
-            {
-              "name": "address_pkey",
-              "columns": [
-                "address_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
             {
               "name": "fk_address_city",
               "columns": [
@@ -221,11 +222,11 @@
               }
             },
             {
-              "name": "2200_16460_5_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "city_id IS NOT NULL"
-              }
+              "name": "address_pkey",
+              "columns": [
+                "address_id"
+              ],
+              "constraint_type": "PrimaryKey"
             },
             {
               "name": "2200_16460_2_not_null",
@@ -235,10 +236,24 @@
               }
             },
             {
+              "name": "2200_16460_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "address_id IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16460_4_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "district IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16460_5_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "city_id IS NOT NULL"
               }
             },
             {
@@ -253,13 +268,6 @@
               "columns": [],
               "constraint_type": {
                 "Check": "last_update IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16460_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "address_id IS NOT NULL"
               }
             }
           ],
@@ -304,6 +312,8 @@
               "columns": [
                 "category_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX category_pkey ON public.category USING btree (category_id)"
             }
           ],
@@ -314,13 +324,6 @@
                 "category_id"
               ],
               "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16429_3_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
-              }
             },
             {
               "name": "2200_16429_1_not_null",
@@ -334,6 +337,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "name IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16429_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -385,6 +395,8 @@
               "columns": [
                 "city_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX city_pkey ON public.city USING btree (city_id)"
             },
             {
@@ -394,6 +406,8 @@
               "columns": [
                 "country_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_country_id ON public.city USING btree (country_id)"
             }
           ],
@@ -491,6 +505,8 @@
               "columns": [
                 "country_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX country_pkey ON public.country USING btree (country_id)"
             }
           ],
@@ -501,13 +517,6 @@
                 "country_id"
               ],
               "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16472_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "country_id IS NOT NULL"
-              }
             },
             {
               "name": "2200_16472_3_not_null",
@@ -521,6 +530,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "country IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16472_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "country_id IS NOT NULL"
               }
             }
           ],
@@ -618,6 +634,8 @@
               "columns": [
                 "customer_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX customer_pkey ON public.customer USING btree (customer_id)"
             },
             {
@@ -627,6 +645,8 @@
               "columns": [
                 "address_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_address_id ON public.customer USING btree (address_id)"
             },
             {
@@ -636,6 +656,8 @@
               "columns": [
                 "store_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_store_id ON public.customer USING btree (store_id)"
             },
             {
@@ -645,10 +667,19 @@
               "columns": [
                 "last_name"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_last_name ON public.customer USING btree (last_name)"
             }
           ],
           "constraints": [
+            {
+              "name": "customer_pkey",
+              "columns": [
+                "customer_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
             {
               "name": "customer_address_id_fkey",
               "columns": [
@@ -666,31 +697,10 @@
               }
             },
             {
-              "name": "customer_pkey",
-              "columns": [
-                "customer_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16413_6_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "address_id IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16413_1_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "customer_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16413_8_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "create_date IS NOT NULL"
               }
             },
             {
@@ -701,10 +711,17 @@
               }
             },
             {
-              "name": "2200_16413_2_not_null",
+              "name": "2200_16413_6_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "store_id IS NOT NULL"
+                "Check": "address_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16413_8_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "create_date IS NOT NULL"
               }
             },
             {
@@ -719,6 +736,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "activebool IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16413_2_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "store_id IS NOT NULL"
               }
             }
           ],
@@ -843,6 +867,8 @@
               "columns": [
                 "film_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX film_pkey ON public.film USING btree (film_id)"
             },
             {
@@ -852,6 +878,8 @@
               "columns": [
                 "fulltext"
               ],
+              "index_type": "gist",
+              "partial_condition": null,
               "definition": "CREATE INDEX film_fulltext_idx ON public.film USING gist (fulltext)"
             },
             {
@@ -861,6 +889,8 @@
               "columns": [
                 "language_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_language_id ON public.film USING btree (language_id)"
             },
             {
@@ -870,6 +900,8 @@
               "columns": [
                 "title"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_title ON public.film USING btree (title)"
             }
           ],
@@ -898,24 +930,10 @@
               }
             },
             {
-              "name": "2200_16435_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "title IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16435_6_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "rental_duration IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_11_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
               }
             },
             {
@@ -933,10 +951,10 @@
               }
             },
             {
-              "name": "2200_16435_5_not_null",
+              "name": "2200_16435_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "language_id IS NOT NULL"
+                "Check": "title IS NOT NULL"
               }
             },
             {
@@ -947,10 +965,24 @@
               }
             },
             {
+              "name": "2200_16435_5_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "language_id IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16435_1_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "film_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16435_11_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -994,6 +1026,8 @@
                 "actor_id",
                 "film_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX film_actor_pkey ON public.film_actor USING btree (actor_id, film_id)"
             },
             {
@@ -1003,10 +1037,28 @@
               "columns": [
                 "film_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_film_id ON public.film_actor USING btree (film_id)"
             }
           ],
           "constraints": [
+            {
+              "name": "film_actor_film_id_fkey",
+              "columns": [
+                "film_id"
+              ],
+              "constraint_type": {
+                "ForeignKey": {
+                  "foreign_table": "film",
+                  "foreign_columns": [
+                    "film_id"
+                  ],
+                  "on_delete": "Restrict",
+                  "on_update": "Cascade"
+                }
+              }
+            },
             {
               "name": "film_actor_pkey",
               "columns": [
@@ -1025,22 +1077,6 @@
                   "foreign_table": "actor",
                   "foreign_columns": [
                     "actor_id"
-                  ],
-                  "on_delete": "Restrict",
-                  "on_update": "Cascade"
-                }
-              }
-            },
-            {
-              "name": "film_actor_film_id_fkey",
-              "columns": [
-                "film_id"
-              ],
-              "constraint_type": {
-                "ForeignKey": {
-                  "foreign_table": "film",
-                  "foreign_columns": [
-                    "film_id"
                   ],
                   "on_delete": "Restrict",
                   "on_update": "Cascade"
@@ -1109,10 +1145,28 @@
                 "film_id",
                 "category_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX film_category_pkey ON public.film_category USING btree (film_id, category_id)"
             }
           ],
           "constraints": [
+            {
+              "name": "film_category_category_id_fkey",
+              "columns": [
+                "category_id"
+              ],
+              "constraint_type": {
+                "ForeignKey": {
+                  "foreign_table": "category",
+                  "foreign_columns": [
+                    "category_id"
+                  ],
+                  "on_delete": "Restrict",
+                  "on_update": "Cascade"
+                }
+              }
+            },
             {
               "name": "film_category_film_id_fkey",
               "columns": [
@@ -1138,26 +1192,10 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "film_category_category_id_fkey",
-              "columns": [
-                "category_id"
-              ],
-              "constraint_type": {
-                "ForeignKey": {
-                  "foreign_table": "category",
-                  "foreign_columns": [
-                    "category_id"
-                  ],
-                  "on_delete": "Restrict",
-                  "on_update": "Cascade"
-                }
-              }
-            },
-            {
-              "name": "2200_16450_3_not_null",
+              "name": "2200_16450_1_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "last_update IS NOT NULL"
+                "Check": "film_id IS NOT NULL"
               }
             },
             {
@@ -1168,10 +1206,10 @@
               }
             },
             {
-              "name": "2200_16450_1_not_null",
+              "name": "2200_16450_3_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "film_id IS NOT NULL"
+                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -1221,6 +1259,8 @@
               "columns": [
                 "inventory_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX inventory_pkey ON public.inventory USING btree (inventory_id)"
             },
             {
@@ -1231,10 +1271,19 @@
                 "store_id",
                 "film_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_store_id_film_id ON public.inventory USING btree (store_id, film_id)"
             }
           ],
           "constraints": [
+            {
+              "name": "inventory_pkey",
+              "columns": [
+                "inventory_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
             {
               "name": "inventory_film_id_fkey",
               "columns": [
@@ -1252,24 +1301,17 @@
               }
             },
             {
-              "name": "inventory_pkey",
-              "columns": [
-                "inventory_id"
-              ],
-              "constraint_type": "PrimaryKey"
+              "name": "2200_16488_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "store_id IS NOT NULL"
+              }
             },
             {
               "name": "2200_16488_2_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "film_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16488_4_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
               }
             },
             {
@@ -1280,10 +1322,10 @@
               }
             },
             {
-              "name": "2200_16488_3_not_null",
+              "name": "2200_16488_4_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "store_id IS NOT NULL"
+                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -1328,6 +1370,8 @@
               "columns": [
                 "language_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX language_pkey ON public.language USING btree (language_id)"
             }
           ],
@@ -1340,10 +1384,10 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "2200_16494_2_not_null",
+              "name": "2200_16494_1_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "name IS NOT NULL"
+                "Check": "language_id IS NOT NULL"
               }
             },
             {
@@ -1354,10 +1398,10 @@
               }
             },
             {
-              "name": "2200_16494_1_not_null",
+              "name": "2200_16494_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "language_id IS NOT NULL"
+                "Check": "name IS NOT NULL"
               }
             }
           ],
@@ -1423,6 +1467,8 @@
               "columns": [
                 "payment_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX payment_pkey ON public.payment USING btree (payment_id)"
             },
             {
@@ -1432,6 +1478,8 @@
               "columns": [
                 "customer_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_customer_id ON public.payment USING btree (customer_id)"
             },
             {
@@ -1441,6 +1489,8 @@
               "columns": [
                 "rental_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_rental_id ON public.payment USING btree (rental_id)"
             },
             {
@@ -1450,26 +1500,12 @@
               "columns": [
                 "staff_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_staff_id ON public.payment USING btree (staff_id)"
             }
           ],
           "constraints": [
-            {
-              "name": "payment_rental_id_fkey",
-              "columns": [
-                "rental_id"
-              ],
-              "constraint_type": {
-                "ForeignKey": {
-                  "foreign_table": "rental",
-                  "foreign_columns": [
-                    "rental_id"
-                  ],
-                  "on_delete": "SetNull",
-                  "on_update": "Cascade"
-                }
-              }
-            },
             {
               "name": "payment_customer_id_fkey",
               "columns": [
@@ -1482,6 +1518,22 @@
                     "customer_id"
                   ],
                   "on_delete": "Restrict",
+                  "on_update": "Cascade"
+                }
+              }
+            },
+            {
+              "name": "payment_rental_id_fkey",
+              "columns": [
+                "rental_id"
+              ],
+              "constraint_type": {
+                "ForeignKey": {
+                  "foreign_table": "rental",
+                  "foreign_columns": [
+                    "rental_id"
+                  ],
+                  "on_delete": "SetNull",
                   "on_update": "Cascade"
                 }
               }
@@ -1524,10 +1576,10 @@
               }
             },
             {
-              "name": "2200_16505_4_not_null",
+              "name": "2200_16505_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "rental_id IS NOT NULL"
+                "Check": "customer_id IS NOT NULL"
               }
             },
             {
@@ -1538,17 +1590,17 @@
               }
             },
             {
+              "name": "2200_16505_4_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "rental_id IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16505_6_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "payment_date IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16505_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "customer_id IS NOT NULL"
               }
             }
           ],
@@ -1623,6 +1675,8 @@
               "columns": [
                 "rental_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX rental_pkey ON public.rental USING btree (rental_id)"
             },
             {
@@ -1632,6 +1686,8 @@
               "columns": [
                 "inventory_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE INDEX idx_fk_inventory_id ON public.rental USING btree (inventory_id)"
             },
             {
@@ -1643,10 +1699,28 @@
                 "inventory_id",
                 "customer_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX idx_unq_rental_rental_date_inventory_id_customer_id ON public.rental USING btree (rental_date, inventory_id, customer_id)"
             }
           ],
           "constraints": [
+            {
+              "name": "rental_staff_id_key",
+              "columns": [
+                "staff_id"
+              ],
+              "constraint_type": {
+                "ForeignKey": {
+                  "foreign_table": "staff",
+                  "foreign_columns": [
+                    "staff_id"
+                  ],
+                  "on_delete": "NoAction",
+                  "on_update": "NoAction"
+                }
+              }
+            },
             {
               "name": "rental_inventory_id_fkey",
               "columns": [
@@ -1664,20 +1738,11 @@
               }
             },
             {
-              "name": "rental_staff_id_key",
+              "name": "rental_pkey",
               "columns": [
-                "staff_id"
+                "rental_id"
               ],
-              "constraint_type": {
-                "ForeignKey": {
-                  "foreign_table": "staff",
-                  "foreign_columns": [
-                    "staff_id"
-                  ],
-                  "on_delete": "NoAction",
-                  "on_update": "NoAction"
-                }
-              }
+              "constraint_type": "PrimaryKey"
             },
             {
               "name": "rental_customer_id_fkey",
@@ -1696,24 +1761,10 @@
               }
             },
             {
-              "name": "rental_pkey",
-              "columns": [
-                "rental_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16510_3_not_null",
+              "name": "2200_16510_1_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "inventory_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16510_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "rental_date IS NOT NULL"
+                "Check": "rental_id IS NOT NULL"
               }
             },
             {
@@ -1724,13 +1775,6 @@
               }
             },
             {
-              "name": "2200_16510_4_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "customer_id IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16510_7_not_null",
               "columns": [],
               "constraint_type": {
@@ -1738,10 +1782,24 @@
               }
             },
             {
-              "name": "2200_16510_1_not_null",
+              "name": "2200_16510_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "rental_id IS NOT NULL"
+                "Check": "rental_date IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16510_4_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "customer_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16510_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "inventory_id IS NOT NULL"
               }
             }
           ],
@@ -1852,10 +1910,19 @@
               "columns": [
                 "staff_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX staff_pkey ON public.staff USING btree (staff_id)"
             }
           ],
           "constraints": [
+            {
+              "name": "staff_pkey",
+              "columns": [
+                "staff_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
             {
               "name": "staff_address_id_fkey",
               "columns": [
@@ -1873,45 +1940,10 @@
               }
             },
             {
-              "name": "staff_pkey",
-              "columns": [
-                "staff_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16521_6_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "store_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16521_7_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "active IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16521_2_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "first_name IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16521_8_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "username IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16521_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "staff_id IS NOT NULL"
               }
             },
             {
@@ -1922,10 +1954,17 @@
               }
             },
             {
-              "name": "2200_16521_3_not_null",
+              "name": "2200_16521_7_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "last_name IS NOT NULL"
+                "Check": "active IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_6_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "store_id IS NOT NULL"
               }
             },
             {
@@ -1933,6 +1972,27 @@
               "columns": [],
               "constraint_type": {
                 "Check": "address_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "staff_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_8_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "username IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_name IS NOT NULL"
               }
             }
           ],
@@ -1982,6 +2042,8 @@
               "columns": [
                 "store_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX store_pkey ON public.store USING btree (store_id)"
             },
             {
@@ -1991,6 +2053,8 @@
               "columns": [
                 "manager_staff_id"
               ],
+              "index_type": "btree",
+              "partial_condition": null,
               "definition": "CREATE UNIQUE INDEX idx_unq_manager_staff_id ON public.store USING btree (manager_staff_id)"
             }
           ],
@@ -2012,6 +2076,13 @@
               }
             },
             {
+              "name": "store_pkey",
+              "columns": [
+                "store_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "store_address_id_fkey",
               "columns": [
                 "address_id"
@@ -2028,17 +2099,10 @@
               }
             },
             {
-              "name": "store_pkey",
-              "columns": [
-                "store_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16530_1_not_null",
+              "name": "2200_16530_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "store_id IS NOT NULL"
+                "Check": "manager_staff_id IS NOT NULL"
               }
             },
             {
@@ -2049,17 +2113,17 @@
               }
             },
             {
+              "name": "2200_16530_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "store_id IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16530_3_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "address_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16530_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "manager_staff_id IS NOT NULL"
               }
             }
           ],

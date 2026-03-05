@@ -302,9 +302,11 @@ impl<'a> PostgresScanner<'a> {
         let index_query = "
             SELECT
                 i.relname AS index_name,
+                am.amname AS index_type,
                 idx.indisunique AS is_unique,
                 idx.indisprimary AS is_primary,
                 pg_get_indexdef(idx.indexrelid) AS index_definition,
+                pg_get_expr(idx.indpred, idx.indrelid) AS partial_condition,
                 (
 	                SELECT array_agg(pg_get_indexdef(idx.indexrelid, k + 1, true) ORDER BY k)
 	                FROM generate_subscripts(idx.indkey, 1) AS k
@@ -315,6 +317,8 @@ impl<'a> PostgresScanner<'a> {
                 pg_class AS t ON t.oid = idx.indrelid
             JOIN
                 pg_class AS i ON i.oid = idx.indexrelid
+            JOIN
+                pg_am AS am ON i.relam = am.oid
             JOIN
                 pg_namespace AS n ON n.oid = t.relnamespace
             WHERE
@@ -331,17 +335,21 @@ impl<'a> PostgresScanner<'a> {
 
         for row in rows {
             let name: String = row.get("index_name");
+            let index_type: String = row.get("index_type");
             let is_unique: bool = row.get("is_unique");
             let is_primary: bool = row.get("is_primary");
             let definition: String = row.get("index_definition");
+            let partial_condition: Option<String> = row.get("partial_condition");
             let columns: Vec<String> = row.get("index_columns");
 
             println!("Adding Index {}", name);
             indexes.push(Index {
                 name,
+                index_type,
                 is_unique,
                 is_primary_key: is_primary,
                 columns,
+                partial_condition,
                 definition,
             });
         }

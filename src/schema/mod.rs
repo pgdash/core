@@ -70,6 +70,8 @@ pub struct Index {
     pub is_unique: bool,
     pub is_primary_key: bool,
     pub columns: Vec<String>,
+    pub index_type: String, // e.g., btree, gin, hash
+    pub partial_condition: Option<String>, // WHERE clause for partial indexes
     pub definition: String, // Full SQL definition from pg_get_indexdef
 }
 
