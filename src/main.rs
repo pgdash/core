@@ -21,11 +21,9 @@ fn main() {
         Ok(database) => {
             println!("Successfully scanned database: {}", database.name);
 
-            // Serialize to JSON
             let json = serde_json::to_string_pretty(&database)
                 .expect("Failed to serialize database to JSON");
 
-            // Write to file
             let filename = format!("{}_schema.json", database.name);
             let mut file = File::create(&filename).expect("Failed to create JSON file");
             file.write_all(json.as_bytes())

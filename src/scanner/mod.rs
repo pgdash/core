@@ -21,7 +21,6 @@ impl<'a> PostgresScanner<'a> {
         };
         println!("Initiating Scan");
 
-        // 1. Fetch all tables
         let tables_query = "
             SELECT table_schema, table_name
             FROM information_schema.tables
@@ -69,7 +68,6 @@ impl<'a> PostgresScanner<'a> {
             });
         }
 
-        // 2. Fetch Views
         let views_query = "
             SELECT table_schema, table_name, view_definition, is_updatable
             FROM information_schema.views
@@ -98,10 +96,8 @@ impl<'a> PostgresScanner<'a> {
             });
         }
 
-        // 3. Fetch Enums
         self.scan_enums(&mut database)?;
 
-        // 4. Fetch Sequences
         self.scan_sequences(&mut database)?;
 
         Ok(database)
@@ -170,7 +166,6 @@ impl<'a> PostgresScanner<'a> {
     ) -> Result<Vec<Constraint>, postgres::Error> {
         let mut constraints = Vec::new();
 
-        // 1. Scan PRIMARY KEY, UNIQUE, and FOREIGN KEY constraints
         let constraints_query = "
             SELECT
                 tc.constraint_name,
@@ -258,7 +253,6 @@ impl<'a> PostgresScanner<'a> {
             });
         }
 
-        // 2. Scan CHECK constraints
         let check_query = "
             SELECT tc.constraint_name, cc.check_clause, ccu.column_name
             FROM information_schema.table_constraints AS tc
@@ -420,17 +414,17 @@ impl<'a> PostgresScanner<'a> {
 
     fn scan_sequences(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
         let seq_query = "
-            SELECT 
-                sequence_schema, 
-                sequence_name, 
-                start_value::bigint, 
-                increment::bigint, 
-                minimum_value::bigint, 
-                maximum_value::bigint, 
+            SELECT
+                sequence_schema,
+                sequence_name,
+                start_value::bigint,
+                increment::bigint,
+                minimum_value::bigint,
+                maximum_value::bigint,
                 cycle_option
-            FROM 
+            FROM
                 information_schema.sequences
-            WHERE 
+            WHERE
                 sequence_schema NOT IN ('information_schema', 'pg_catalog');
         ";
 

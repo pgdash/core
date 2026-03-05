@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Represents a Postgres Data Type.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PostgresDataType {
     Boolean,
@@ -15,9 +14,9 @@ pub enum PostgresDataType {
     Varchar(Option<u32>),
     Text,
     Bytea,
-    Timestamp(bool), // with/without time zone
     Date,
-    Time(bool), // with/without time zone
+    Timestamp(bool), // bool in team stands for with/without time zone
+    Time(bool),
     Interval,
     Json,
     Jsonb,
@@ -26,10 +25,9 @@ pub enum PostgresDataType {
     Cidr,
     MacAddr,
     Array(Box<PostgresDataType>),
-    Custom(String), // For user-defined types/enums
+    Custom(String), // for user-defined types or enums
 }
 
-/// Represents the action to take on a foreign key during updates or deletions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ReferentialAction {
     NoAction,
@@ -39,7 +37,6 @@ pub enum ReferentialAction {
     SetDefault,
 }
 
-/// Represents the type of a table-level constraint.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ConstraintType {
     PrimaryKey,
@@ -53,7 +50,6 @@ pub enum ConstraintType {
     },
 }
 
-/// Represents a column within a table.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Column {
     pub name: String,
@@ -63,7 +59,6 @@ pub struct Column {
     pub comment: Option<String>,
 }
 
-/// Represents an index on a table.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Index {
     pub name: String,
@@ -71,28 +66,25 @@ pub struct Index {
     pub is_primary_key: bool,
     pub columns: Vec<String>,
     pub index_type: String,                // e.g., btree, gin, hash
-    pub partial_condition: Option<String>, // WHERE clause for partial indexes
-    pub definition: String,                // Full SQL definition from pg_get_indexdef
+    pub partial_condition: Option<String>, // the WHERE clause for partial indexes
+    pub definition: String,                // Full SQL definition from using pg_get_indexdef
 }
 
-/// Represents a table-level or column-level constraint.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Constraint {
     pub name: String,
-    pub columns: Vec<String>, // Local columns affected by the constraint
+    pub columns: Vec<String>, // local columns affected by the constraint
     pub constraint_type: ConstraintType,
 }
 
-/// Represents a trigger on a table.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Trigger {
     pub name: String,
-    pub event_manipulation: String, // INSERT, UPDATE, DELETE
+    pub event_manipulation: String, // can be INSERT, UPDATE, DELETE
     pub action_statement: String,
-    pub action_timing: String, // BEFORE, AFTER, INSTEAD OF
+    pub action_timing: String, // can be BEFORE, AFTER, INSTEAD OF
 }
 
-/// Represents a table in a Postgres schema.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Table {
     pub name: String,
@@ -127,7 +119,6 @@ impl Table {
     }
 }
 
-/// Represents a database view.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct View {
     pub name: String,
@@ -136,7 +127,6 @@ pub struct View {
     pub is_updatable: bool,
 }
 
-/// Represents a user-defined Enum type.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumType {
     pub name: String,
@@ -144,7 +134,6 @@ pub struct EnumType {
     pub variants: Vec<String>,
 }
 
-/// Represents a Postgres sequence.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Sequence {
     pub name: String,
@@ -156,7 +145,6 @@ pub struct Sequence {
     pub cycle: bool,
 }
 
-/// Represents a Postgres function or procedure.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Function {
     pub name: String,
@@ -168,7 +156,6 @@ pub struct Function {
     pub is_procedure: bool,
 }
 
-/// Represents a Postgres Schema (e.g., 'public', 'auth').
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Schema {
     pub name: String,
@@ -179,7 +166,6 @@ pub struct Schema {
     pub sequences: Vec<Sequence>,
 }
 
-/// Represents a full Postgres Database.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Database {
     pub name: String,
