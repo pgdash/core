@@ -101,6 +101,9 @@ impl<'a> PostgresScanner<'a> {
         // 3. Fetch Enums
         self.scan_enums(&mut database)?;
 
+        // 4. Fetch Sequences
+        self.scan_sequences(&mut database)?;
+
         Ok(database)
     }
 
@@ -409,6 +412,55 @@ impl<'a> PostgresScanner<'a> {
                 name: enum_name,
                 schema_name,
                 variants,
+            });
+        }
+
+        Ok(())
+    }
+
+    fn scan_sequences(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+        let seq_query = "
+            SELECT 
+                sequence_schema, 
+                sequence_name, 
+                start_value::bigint, 
+                increment::bigint, 
+                minimum_value::bigint, 
+                maximum_value::bigint, 
+                cycle_option
+            FROM 
+                information_schema.sequences
+            WHERE 
+                sequence_schema NOT IN ('information_schema', 'pg_catalog');
+        ";
+
+        let rows = self.client.query(seq_query, &[])?;
+
+        for row in rows {
+            let schema_name: String = row.get("sequence_schema");
+            let name: String = row.get("sequence_name");
+            let start_value: i64 = row.get("start_value");
+            let increment: i64 = row.get("increment");
+            let min_value: i64 = row.get("minimum_value");
+            let max_value: i64 = row.get("maximum_value");
+            let cycle_option: String = row.get("cycle_option");
+
+            let schema = database
+                .schemas
+                .entry(schema_name.clone())
+                .or_insert_with(|| Schema {
+                    name: schema_name.clone(),
+                    ..Default::default()
+                });
+
+            schema.sequences.push(crate::schema::Sequence {
+                name,
+                schema_name,
+                start_value,
+                increment_by: increment,
+                min_value,
+                max_value,
+                cycle: cycle_option == "YES",
             });
         }
 
