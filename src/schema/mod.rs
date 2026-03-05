@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Represents a Postgres Data Type.
@@ -70,9 +70,9 @@ pub struct Index {
     pub is_unique: bool,
     pub is_primary_key: bool,
     pub columns: Vec<String>,
-    pub index_type: String, // e.g., btree, gin, hash
+    pub index_type: String,                // e.g., btree, gin, hash
     pub partial_condition: Option<String>, // WHERE clause for partial indexes
-    pub definition: String, // Full SQL definition from pg_get_indexdef
+    pub definition: String,                // Full SQL definition from pg_get_indexdef
 }
 
 /// Represents a table-level or column-level constraint.
@@ -89,7 +89,7 @@ pub struct Trigger {
     pub name: String,
     pub event_manipulation: String, // INSERT, UPDATE, DELETE
     pub action_statement: String,
-    pub action_timing: String,      // BEFORE, AFTER, INSTEAD OF
+    pub action_timing: String, // BEFORE, AFTER, INSTEAD OF
 }
 
 /// Represents a table in a Postgres schema.
@@ -106,20 +106,23 @@ pub struct Table {
 
 impl Table {
     pub fn get_primary_key_columns(&self) -> Vec<&Column> {
-        let pk_columns: Vec<String> = self.constraints.iter()
+        let pk_columns: Vec<String> = self
+            .constraints
+            .iter()
             .filter(|c| matches!(c.constraint_type, ConstraintType::PrimaryKey))
             .flat_map(|c| c.columns.clone())
             .collect();
-        
-        self.columns.iter()
+
+        self.columns
+            .iter()
             .filter(|col| pk_columns.contains(&col.name))
             .collect()
     }
 
     pub fn is_foreign_key(&self, column_name: &str) -> bool {
         self.constraints.iter().any(|c| {
-            matches!(c.constraint_type, ConstraintType::ForeignKey { .. }) &&
-            c.columns.contains(&column_name.to_string())
+            matches!(c.constraint_type, ConstraintType::ForeignKey { .. })
+                && c.columns.contains(&column_name.to_string())
         })
     }
 }
