@@ -98,6 +98,9 @@ impl<'a> PostgresScanner<'a> {
             });
         }
 
+        // 3. Fetch Enums
+        self.scan_enums(&mut database)?;
+
         Ok(database)
     }
 
@@ -365,5 +368,50 @@ impl<'a> PostgresScanner<'a> {
             "RESTRICT" => ReferentialAction::Restrict,
             _ => ReferentialAction::NoAction,
         }
+    }
+
+    fn scan_enums(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+        let enum_query = "
+            SELECT
+                n.nspname AS schema_name,
+                t.typname AS enum_name,
+                array_agg(e.enumlabel ORDER BY e.enumsortorder) AS variants
+            FROM
+                pg_type t
+            JOIN
+                pg_enum e ON t.oid = e.enumtypid
+            JOIN
+                pg_namespace n ON n.oid = t.typnamespace
+            WHERE
+                n.nspname NOT IN ('information_schema', 'pg_catalog')
+            GROUP BY
+                n.nspname, t.typname;
+        ";
+
+        println!("Querying user-defined enums");
+        let rows = self.client.query(enum_query, &[])?;
+
+        for row in rows {
+            let schema_name: String = row.get("schema_name");
+            let enum_name: String = row.get("enum_name");
+            let variants: Vec<String> = row.get("variants");
+
+            println!("Adding Enum {} in schema {}", enum_name, schema_name);
+            let schema = database
+                .schemas
+                .entry(schema_name.clone())
+                .or_insert_with(|| Schema {
+                    name: schema_name.clone(),
+                    ..Default::default()
+                });
+
+            schema.enums.push(crate::schema::EnumType {
+                name: enum_name,
+                schema_name,
+                variants,
+            });
+        }
+
+        Ok(())
     }
 }
