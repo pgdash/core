@@ -1,897 +1,1707 @@
 {
-  "name": "dvdrental",
-  "schemas": {
-    "public": {
-      "name": "public",
-      "tables": [
-        {
-          "name": "actor",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "actor_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('actor_actor_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "first_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "address",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "address_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('address_address_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "address",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "address2",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "district",
-              "data_type": {
-                "Varchar": 20
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "city_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "postal_code",
-              "data_type": {
-                "Varchar": 10
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "phone",
-              "data_type": {
-                "Varchar": 20
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "category",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "category_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('category_category_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "name",
-              "data_type": {
-                "Varchar": 25
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "city",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "city_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('city_city_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "city",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "country_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "country",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "country_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('country_country_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "country",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "customer",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "customer_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('customer_customer_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "store_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "first_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "email",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "address_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "activebool",
-              "data_type": "Boolean",
-              "is_nullable": false,
-              "default_value": "true",
-              "comment": null
-            },
-            {
-              "name": "create_date",
-              "data_type": "Date",
-              "is_nullable": false,
-              "default_value": "('now'::text)::date",
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": true,
-              "default_value": "now()",
-              "comment": null
-            },
-            {
-              "name": "active",
-              "data_type": "Integer",
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "film",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "film_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('film_film_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "title",
-              "data_type": {
-                "Varchar": 255
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "description",
-              "data_type": "Text",
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "release_year",
-              "data_type": "Integer",
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "language_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "rental_duration",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": "3",
-              "comment": null
-            },
-            {
-              "name": "rental_rate",
-              "data_type": {
-                "Custom": "numeric"
-              },
-              "is_nullable": false,
-              "default_value": "4.99",
-              "comment": null
-            },
-            {
-              "name": "length",
-              "data_type": "SmallInt",
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "replacement_cost",
-              "data_type": {
-                "Custom": "numeric"
-              },
-              "is_nullable": false,
-              "default_value": "19.99",
-              "comment": null
-            },
-            {
-              "name": "rating",
-              "data_type": {
-                "Custom": "USER-DEFINED"
-              },
-              "is_nullable": true,
-              "default_value": "'G'::mpaa_rating",
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            },
-            {
-              "name": "special_features",
-              "data_type": {
-                "Custom": "ARRAY"
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "fulltext",
-              "data_type": {
-                "Custom": "tsvector"
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "film_actor",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "actor_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "film_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "film_category",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "film_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "category_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "inventory",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "inventory_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('inventory_inventory_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "film_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "store_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "language",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "language_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('language_language_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "name",
-              "data_type": {
-                "Character": 20
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "payment",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "payment_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('payment_payment_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "customer_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "staff_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "rental_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "amount",
-              "data_type": {
-                "Custom": "numeric"
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "payment_date",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "rental",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "rental_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('rental_rental_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "rental_date",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "inventory_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "customer_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "return_date",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "staff_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "staff",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "staff_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('staff_staff_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "first_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_name",
-              "data_type": {
-                "Varchar": 45
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "address_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "email",
-              "data_type": {
-                "Varchar": 50
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "store_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "active",
-              "data_type": "Boolean",
-              "is_nullable": false,
-              "default_value": "true",
-              "comment": null
-            },
-            {
-              "name": "username",
-              "data_type": {
-                "Varchar": 16
-              },
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "password",
-              "data_type": {
-                "Varchar": 40
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            },
-            {
-              "name": "picture",
-              "data_type": {
-                "Custom": "bytea"
-              },
-              "is_nullable": true,
-              "default_value": null,
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        },
-        {
-          "name": "store",
-          "schema_name": "public",
-          "columns": [
-            {
-              "name": "store_id",
-              "data_type": "Integer",
-              "is_nullable": false,
-              "default_value": "nextval('store_store_id_seq'::regclass)",
-              "comment": null
-            },
-            {
-              "name": "manager_staff_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "address_id",
-              "data_type": "SmallInt",
-              "is_nullable": false,
-              "default_value": null,
-              "comment": null
-            },
-            {
-              "name": "last_update",
-              "data_type": {
-                "Timestamp": false
-              },
-              "is_nullable": false,
-              "default_value": "now()",
-              "comment": null
-            }
-          ],
-          "indexes": [],
-          "constraints": [],
-          "triggers": [],
-          "comment": null
-        }
-      ],
-      "views": [
-        {
-          "name": "actor_info",
-          "schema_name": "public",
-          "definition": " SELECT a.actor_id,\n    a.first_name,\n    a.last_name,\n    group_concat(DISTINCT (((c.name)::text || ': '::text) || ( SELECT group_concat((f.title)::text) AS group_concat\n           FROM ((film f\n             JOIN film_category fc_1 ON ((f.film_id = fc_1.film_id)))\n             JOIN film_actor fa_1 ON ((f.film_id = fa_1.film_id)))\n          WHERE ((fc_1.category_id = c.category_id) AND (fa_1.actor_id = a.actor_id))\n          GROUP BY fa_1.actor_id))) AS film_info\n   FROM (((actor a\n     LEFT JOIN film_actor fa ON ((a.actor_id = fa.actor_id)))\n     LEFT JOIN film_category fc ON ((fa.film_id = fc.film_id)))\n     LEFT JOIN category c ON ((fc.category_id = c.category_id)))\n  GROUP BY a.actor_id, a.first_name, a.last_name;",
-          "is_updatable": false
-        },
-        {
-          "name": "customer_list",
-          "schema_name": "public",
-          "definition": " SELECT cu.customer_id AS id,\n    (((cu.first_name)::text || ' '::text) || (cu.last_name)::text) AS name,\n    a.address,\n    a.postal_code AS \"zip code\",\n    a.phone,\n    city.city,\n    country.country,\n        CASE\n            WHEN cu.activebool THEN 'active'::text\n            ELSE ''::text\n        END AS notes,\n    cu.store_id AS sid\n   FROM (((customer cu\n     JOIN address a ON ((cu.address_id = a.address_id)))\n     JOIN city ON ((a.city_id = city.city_id)))\n     JOIN country ON ((city.country_id = country.country_id)));",
-          "is_updatable": false
-        },
-        {
-          "name": "film_list",
-          "schema_name": "public",
-          "definition": " SELECT film.film_id AS fid,\n    film.title,\n    film.description,\n    category.name AS category,\n    film.rental_rate AS price,\n    film.length,\n    film.rating,\n    group_concat((((actor.first_name)::text || ' '::text) || (actor.last_name)::text)) AS actors\n   FROM ((((category\n     LEFT JOIN film_category ON ((category.category_id = film_category.category_id)))\n     LEFT JOIN film ON ((film_category.film_id = film.film_id)))\n     JOIN film_actor ON ((film.film_id = film_actor.film_id)))\n     JOIN actor ON ((film_actor.actor_id = actor.actor_id)))\n  GROUP BY film.film_id, film.title, film.description, category.name, film.rental_rate, film.length, film.rating;",
-          "is_updatable": false
-        },
-        {
-          "name": "nicer_but_slower_film_list",
-          "schema_name": "public",
-          "definition": " SELECT film.film_id AS fid,\n    film.title,\n    film.description,\n    category.name AS category,\n    film.rental_rate AS price,\n    film.length,\n    film.rating,\n    group_concat((((upper(\"substring\"((actor.first_name)::text, 1, 1)) || lower(\"substring\"((actor.first_name)::text, 2))) || upper(\"substring\"((actor.last_name)::text, 1, 1))) || lower(\"substring\"((actor.last_name)::text, 2)))) AS actors\n   FROM ((((category\n     LEFT JOIN film_category ON ((category.category_id = film_category.category_id)))\n     LEFT JOIN film ON ((film_category.film_id = film.film_id)))\n     JOIN film_actor ON ((film.film_id = film_actor.film_id)))\n     JOIN actor ON ((film_actor.actor_id = actor.actor_id)))\n  GROUP BY film.film_id, film.title, film.description, category.name, film.rental_rate, film.length, film.rating;",
-          "is_updatable": false
-        },
-        {
-          "name": "sales_by_film_category",
-          "schema_name": "public",
-          "definition": " SELECT c.name AS category,\n    sum(p.amount) AS total_sales\n   FROM (((((payment p\n     JOIN rental r ON ((p.rental_id = r.rental_id)))\n     JOIN inventory i ON ((r.inventory_id = i.inventory_id)))\n     JOIN film f ON ((i.film_id = f.film_id)))\n     JOIN film_category fc ON ((f.film_id = fc.film_id)))\n     JOIN category c ON ((fc.category_id = c.category_id)))\n  GROUP BY c.name\n  ORDER BY (sum(p.amount)) DESC;",
-          "is_updatable": false
-        },
-        {
-          "name": "sales_by_store",
-          "schema_name": "public",
-          "definition": " SELECT (((c.city)::text || ','::text) || (cy.country)::text) AS store,\n    (((m.first_name)::text || ' '::text) || (m.last_name)::text) AS manager,\n    sum(p.amount) AS total_sales\n   FROM (((((((payment p\n     JOIN rental r ON ((p.rental_id = r.rental_id)))\n     JOIN inventory i ON ((r.inventory_id = i.inventory_id)))\n     JOIN store s ON ((i.store_id = s.store_id)))\n     JOIN address a ON ((s.address_id = a.address_id)))\n     JOIN city c ON ((a.city_id = c.city_id)))\n     JOIN country cy ON ((c.country_id = cy.country_id)))\n     JOIN staff m ON ((s.manager_staff_id = m.staff_id)))\n  GROUP BY cy.country, c.city, s.store_id, m.first_name, m.last_name\n  ORDER BY cy.country, c.city;",
-          "is_updatable": false
-        },
-        {
-          "name": "staff_list",
-          "schema_name": "public",
-          "definition": " SELECT s.staff_id AS id,\n    (((s.first_name)::text || ' '::text) || (s.last_name)::text) AS name,\n    a.address,\n    a.postal_code AS \"zip code\",\n    a.phone,\n    city.city,\n    country.country,\n    s.store_id AS sid\n   FROM (((staff s\n     JOIN address a ON ((s.address_id = a.address_id)))\n     JOIN city ON ((a.city_id = city.city_id)))\n     JOIN country ON ((city.country_id = country.country_id)));",
-          "is_updatable": false
-        }
-      ],
-      "enums": [],
-      "functions": [],
-      "sequences": []
-    }
-  }
+	"name": "dvdrental",
+	"schemas": {
+		"public": {
+			"name": "public",
+			"tables": [
+				{
+					"name": "actor",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "actor_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('actor_actor_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "first_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "actor_pkey",
+							"columns": ["actor_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16423_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "first_name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16423_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16423_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "actor_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16423_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_name IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "address",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "address_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('address_address_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "address",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "address2",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "district",
+							"data_type": {
+								"Varchar": 20
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "city_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "postal_code",
+							"data_type": {
+								"Varchar": 10
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "phone",
+							"data_type": {
+								"Varchar": 20
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "address_pkey",
+							"columns": ["address_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "fk_address_city",
+							"columns": ["city_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "city",
+									"foreign_columns": ["city_id"],
+									"on_delete": "NoAction",
+									"on_update": "NoAction"
+								}
+							}
+						},
+						{
+							"name": "2200_16460_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "district IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16460_7_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "phone IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16460_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "address_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16460_5_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "city_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16460_8_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16460_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "address IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "category",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "category_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('category_category_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "name",
+							"data_type": {
+								"Varchar": 25
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "category_pkey",
+							"columns": ["category_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16429_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "category_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16429_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16429_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "city",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "city_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('city_city_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "city",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "country_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "city_pkey",
+							"columns": ["city_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "fk_city",
+							"columns": ["country_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "country",
+									"foreign_columns": ["country_id"],
+									"on_delete": "NoAction",
+									"on_update": "NoAction"
+								}
+							}
+						},
+						{
+							"name": "2200_16466_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "city IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16466_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "country_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16466_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "city_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16466_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "country",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "country_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('country_country_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "country",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "country_pkey",
+							"columns": ["country_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16472_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16472_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "country_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16472_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "country IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "customer",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "customer_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('customer_customer_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "store_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "first_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "email",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "address_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "activebool",
+							"data_type": "Boolean",
+							"is_nullable": false,
+							"default_value": "true",
+							"comment": null
+						},
+						{
+							"name": "create_date",
+							"data_type": "Date",
+							"is_nullable": false,
+							"default_value": "('now'::text)::date",
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": true,
+							"default_value": "now()",
+							"comment": null
+						},
+						{
+							"name": "active",
+							"data_type": "Integer",
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "customer_address_id_fkey",
+							"columns": ["address_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "address",
+									"foreign_columns": ["address_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "customer_pkey",
+							"columns": ["customer_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16413_6_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "address_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_7_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "activebool IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_8_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "create_date IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "store_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "first_name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16413_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "customer_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "film",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "film_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('film_film_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "title",
+							"data_type": {
+								"Varchar": 255
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "description",
+							"data_type": "Text",
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "release_year",
+							"data_type": "Integer",
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "language_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "rental_duration",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": "3",
+							"comment": null
+						},
+						{
+							"name": "rental_rate",
+							"data_type": {
+								"Custom": "numeric"
+							},
+							"is_nullable": false,
+							"default_value": "4.99",
+							"comment": null
+						},
+						{
+							"name": "length",
+							"data_type": "SmallInt",
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "replacement_cost",
+							"data_type": {
+								"Custom": "numeric"
+							},
+							"is_nullable": false,
+							"default_value": "19.99",
+							"comment": null
+						},
+						{
+							"name": "rating",
+							"data_type": {
+								"Custom": "USER-DEFINED"
+							},
+							"is_nullable": true,
+							"default_value": "'G'::mpaa_rating",
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						},
+						{
+							"name": "special_features",
+							"data_type": {
+								"Custom": "ARRAY"
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "fulltext",
+							"data_type": {
+								"Custom": "tsvector"
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "film_pkey",
+							"columns": ["film_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "film_language_id_fkey",
+							"columns": ["language_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "language",
+									"foreign_columns": ["language_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "2200_16435_7_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "rental_rate IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_6_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "rental_duration IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_13_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "fulltext IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_5_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "language_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "film_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "title IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_9_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "replacement_cost IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16435_11_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "film_actor",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "actor_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "film_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "film_actor_actor_id_fkey",
+							"columns": ["actor_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "actor",
+									"foreign_columns": ["actor_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "film_actor_film_id_fkey",
+							"columns": ["film_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "film",
+									"foreign_columns": ["film_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "film_actor_pkey",
+							"columns": ["actor_id", "film_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16446_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "film_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16446_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16446_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "actor_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "film_category",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "film_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "category_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "film_category_category_id_fkey",
+							"columns": ["category_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "category",
+									"foreign_columns": ["category_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "film_category_film_id_fkey",
+							"columns": ["film_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "film",
+									"foreign_columns": ["film_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "film_category_pkey",
+							"columns": ["film_id", "category_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16450_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "film_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16450_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "category_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16450_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "inventory",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "inventory_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('inventory_inventory_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "film_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "store_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "inventory_film_id_fkey",
+							"columns": ["film_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "film",
+									"foreign_columns": ["film_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "inventory_pkey",
+							"columns": ["inventory_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16488_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "store_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16488_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "inventory_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16488_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "film_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16488_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "language",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "language_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('language_language_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "name",
+							"data_type": {
+								"Character": 20
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "language_pkey",
+							"columns": ["language_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16494_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16494_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "language_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16494_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "payment",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "payment_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('payment_payment_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "customer_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "staff_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "rental_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "amount",
+							"data_type": {
+								"Custom": "numeric"
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "payment_date",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "payment_rental_id_fkey",
+							"columns": ["rental_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "rental",
+									"foreign_columns": ["rental_id"],
+									"on_delete": "SetNull",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "payment_pkey",
+							"columns": ["payment_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "payment_customer_id_fkey",
+							"columns": ["customer_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "customer",
+									"foreign_columns": ["customer_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "payment_staff_id_fkey",
+							"columns": ["staff_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "staff",
+									"foreign_columns": ["staff_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "2200_16505_6_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "payment_date IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16505_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "staff_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16505_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "customer_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16505_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "payment_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16505_5_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "amount IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16505_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "rental_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "rental",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "rental_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('rental_rental_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "rental_date",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "inventory_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "customer_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "return_date",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "staff_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "rental_customer_id_fkey",
+							"columns": ["customer_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "customer",
+									"foreign_columns": ["customer_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "rental_inventory_id_fkey",
+							"columns": ["inventory_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "inventory",
+									"foreign_columns": ["inventory_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "rental_staff_id_key",
+							"columns": ["staff_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "staff",
+									"foreign_columns": ["staff_id"],
+									"on_delete": "NoAction",
+									"on_update": "NoAction"
+								}
+							}
+						},
+						{
+							"name": "rental_pkey",
+							"columns": ["rental_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16510_7_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16510_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "rental_date IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16510_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "rental_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16510_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "customer_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16510_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "inventory_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16510_6_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "staff_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "staff",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "staff_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('staff_staff_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "first_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_name",
+							"data_type": {
+								"Varchar": 45
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "address_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "email",
+							"data_type": {
+								"Varchar": 50
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "store_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "active",
+							"data_type": "Boolean",
+							"is_nullable": false,
+							"default_value": "true",
+							"comment": null
+						},
+						{
+							"name": "username",
+							"data_type": {
+								"Varchar": 16
+							},
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "password",
+							"data_type": {
+								"Varchar": 40
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						},
+						{
+							"name": "picture",
+							"data_type": {
+								"Custom": "bytea"
+							},
+							"is_nullable": true,
+							"default_value": null,
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "staff_address_id_fkey",
+							"columns": ["address_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "address",
+									"foreign_columns": ["address_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "staff_pkey",
+							"columns": ["staff_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "2200_16521_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "staff_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "first_name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_7_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "active IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_10_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_name IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_8_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "username IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_6_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "store_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16521_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "address_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				},
+				{
+					"name": "store",
+					"schema_name": "public",
+					"columns": [
+						{
+							"name": "store_id",
+							"data_type": "Integer",
+							"is_nullable": false,
+							"default_value": "nextval('store_store_id_seq'::regclass)",
+							"comment": null
+						},
+						{
+							"name": "manager_staff_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "address_id",
+							"data_type": "SmallInt",
+							"is_nullable": false,
+							"default_value": null,
+							"comment": null
+						},
+						{
+							"name": "last_update",
+							"data_type": {
+								"Timestamp": false
+							},
+							"is_nullable": false,
+							"default_value": "now()",
+							"comment": null
+						}
+					],
+					"indexes": [],
+					"constraints": [
+						{
+							"name": "store_manager_staff_id_fkey",
+							"columns": ["manager_staff_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "staff",
+									"foreign_columns": ["staff_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "store_pkey",
+							"columns": ["store_id"],
+							"constraint_type": "PrimaryKey"
+						},
+						{
+							"name": "store_address_id_fkey",
+							"columns": ["address_id"],
+							"constraint_type": {
+								"ForeignKey": {
+									"foreign_table": "address",
+									"foreign_columns": ["address_id"],
+									"on_delete": "Restrict",
+									"on_update": "Cascade"
+								}
+							}
+						},
+						{
+							"name": "2200_16530_4_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "last_update IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16530_2_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "manager_staff_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16530_3_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "address_id IS NOT NULL"
+							}
+						},
+						{
+							"name": "2200_16530_1_not_null",
+							"columns": [],
+							"constraint_type": {
+								"Check": "store_id IS NOT NULL"
+							}
+						}
+					],
+					"triggers": [],
+					"comment": null
+				}
+			],
+			"views": [
+				{
+					"name": "actor_info",
+					"schema_name": "public",
+					"definition": " SELECT a.actor_id,\n    a.first_name,\n    a.last_name,\n    group_concat(DISTINCT (((c.name)::text || ': '::text) || ( SELECT group_concat((f.title)::text) AS group_concat\n           FROM ((film f\n             JOIN film_category fc_1 ON ((f.film_id = fc_1.film_id)))\n             JOIN film_actor fa_1 ON ((f.film_id = fa_1.film_id)))\n          WHERE ((fc_1.category_id = c.category_id) AND (fa_1.actor_id = a.actor_id))\n          GROUP BY fa_1.actor_id))) AS film_info\n   FROM (((actor a\n     LEFT JOIN film_actor fa ON ((a.actor_id = fa.actor_id)))\n     LEFT JOIN film_category fc ON ((fa.film_id = fc.film_id)))\n     LEFT JOIN category c ON ((fc.category_id = c.category_id)))\n  GROUP BY a.actor_id, a.first_name, a.last_name;",
+					"is_updatable": false
+				},
+				{
+					"name": "customer_list",
+					"schema_name": "public",
+					"definition": " SELECT cu.customer_id AS id,\n    (((cu.first_name)::text || ' '::text) || (cu.last_name)::text) AS name,\n    a.address,\n    a.postal_code AS \"zip code\",\n    a.phone,\n    city.city,\n    country.country,\n        CASE\n            WHEN cu.activebool THEN 'active'::text\n            ELSE ''::text\n        END AS notes,\n    cu.store_id AS sid\n   FROM (((customer cu\n     JOIN address a ON ((cu.address_id = a.address_id)))\n     JOIN city ON ((a.city_id = city.city_id)))\n     JOIN country ON ((city.country_id = country.country_id)));",
+					"is_updatable": false
+				},
+				{
+					"name": "film_list",
+					"schema_name": "public",
+					"definition": " SELECT film.film_id AS fid,\n    film.title,\n    film.description,\n    category.name AS category,\n    film.rental_rate AS price,\n    film.length,\n    film.rating,\n    group_concat((((actor.first_name)::text || ' '::text) || (actor.last_name)::text)) AS actors\n   FROM ((((category\n     LEFT JOIN film_category ON ((category.category_id = film_category.category_id)))\n     LEFT JOIN film ON ((film_category.film_id = film.film_id)))\n     JOIN film_actor ON ((film.film_id = film_actor.film_id)))\n     JOIN actor ON ((film_actor.actor_id = actor.actor_id)))\n  GROUP BY film.film_id, film.title, film.description, category.name, film.rental_rate, film.length, film.rating;",
+					"is_updatable": false
+				},
+				{
+					"name": "nicer_but_slower_film_list",
+					"schema_name": "public",
+					"definition": " SELECT film.film_id AS fid,\n    film.title,\n    film.description,\n    category.name AS category,\n    film.rental_rate AS price,\n    film.length,\n    film.rating,\n    group_concat((((upper(\"substring\"((actor.first_name)::text, 1, 1)) || lower(\"substring\"((actor.first_name)::text, 2))) || upper(\"substring\"((actor.last_name)::text, 1, 1))) || lower(\"substring\"((actor.last_name)::text, 2)))) AS actors\n   FROM ((((category\n     LEFT JOIN film_category ON ((category.category_id = film_category.category_id)))\n     LEFT JOIN film ON ((film_category.film_id = film.film_id)))\n     JOIN film_actor ON ((film.film_id = film_actor.film_id)))\n     JOIN actor ON ((film_actor.actor_id = actor.actor_id)))\n  GROUP BY film.film_id, film.title, film.description, category.name, film.rental_rate, film.length, film.rating;",
+					"is_updatable": false
+				},
+				{
+					"name": "sales_by_film_category",
+					"schema_name": "public",
+					"definition": " SELECT c.name AS category,\n    sum(p.amount) AS total_sales\n   FROM (((((payment p\n     JOIN rental r ON ((p.rental_id = r.rental_id)))\n     JOIN inventory i ON ((r.inventory_id = i.inventory_id)))\n     JOIN film f ON ((i.film_id = f.film_id)))\n     JOIN film_category fc ON ((f.film_id = fc.film_id)))\n     JOIN category c ON ((fc.category_id = c.category_id)))\n  GROUP BY c.name\n  ORDER BY (sum(p.amount)) DESC;",
+					"is_updatable": false
+				},
+				{
+					"name": "sales_by_store",
+					"schema_name": "public",
+					"definition": " SELECT (((c.city)::text || ','::text) || (cy.country)::text) AS store,\n    (((m.first_name)::text || ' '::text) || (m.last_name)::text) AS manager,\n    sum(p.amount) AS total_sales\n   FROM (((((((payment p\n     JOIN rental r ON ((p.rental_id = r.rental_id)))\n     JOIN inventory i ON ((r.inventory_id = i.inventory_id)))\n     JOIN store s ON ((i.store_id = s.store_id)))\n     JOIN address a ON ((s.address_id = a.address_id)))\n     JOIN city c ON ((a.city_id = c.city_id)))\n     JOIN country cy ON ((c.country_id = cy.country_id)))\n     JOIN staff m ON ((s.manager_staff_id = m.staff_id)))\n  GROUP BY cy.country, c.city, s.store_id, m.first_name, m.last_name\n  ORDER BY cy.country, c.city;",
+					"is_updatable": false
+				},
+				{
+					"name": "staff_list",
+					"schema_name": "public",
+					"definition": " SELECT s.staff_id AS id,\n    (((s.first_name)::text || ' '::text) || (s.last_name)::text) AS name,\n    a.address,\n    a.postal_code AS \"zip code\",\n    a.phone,\n    city.city,\n    country.country,\n    s.store_id AS sid\n   FROM (((staff s\n     JOIN address a ON ((s.address_id = a.address_id)))\n     JOIN city ON ((a.city_id = city.city_id)))\n     JOIN country ON ((city.country_id = country.country_id)));",
+					"is_updatable": false
+				}
+			],
+			"enums": [],
+			"functions": [],
+			"sequences": []
+		}
+	}
 }
