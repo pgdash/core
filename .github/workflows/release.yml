@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+
+      - name: Build (Release)
+        run: cargo build --release --locked
+
+      - name: Run Tests
+        run: cargo test --release --locked
+
+      - name: Package Binary
+        run: |
+          mkdir release
+          cp target/release/pgdash-core release/pgdash
+          tar -czvf pgdash-linux-amd64.tar.gz -C release pgdash
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pgdash-linux-amd64.tar.gz
+          body: "New release of pgdash-core."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
