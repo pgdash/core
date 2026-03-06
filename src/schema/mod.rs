@@ -172,3 +172,69 @@ pub struct Database {
     pub name: String,
     pub schemas: HashMap<String, Schema>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_table_get_primary_key_columns() {
+        let col1 = Column {
+            name: "id".to_string(),
+            data_type: PostgresDataType::Integer,
+            is_nullable: false,
+            default_value: None,
+            comment: None,
+        };
+        let col2 = Column {
+            name: "name".to_string(),
+            data_type: PostgresDataType::Text,
+            is_nullable: true,
+            default_value: None,
+            comment: None,
+        };
+
+        let table = Table {
+            name: "users".to_string(),
+            schema_name: "public".to_string(),
+            columns: vec![col1.clone(), col2.clone()],
+            indexes: vec![],
+            constraints: vec![Constraint {
+                name: "pk_users".to_string(),
+                columns: vec!["id".to_string()],
+                constraint_type: ConstraintType::PrimaryKey,
+            }],
+            triggers: vec![],
+            comment: None,
+        };
+
+        let pk_cols = table.get_primary_key_columns();
+        assert_eq!(pk_cols.len(), 1);
+        assert_eq!(pk_cols[0].name, "id");
+    }
+
+    #[test]
+    fn test_table_is_foreign_key() {
+        let table = Table {
+            name: "posts".to_string(),
+            schema_name: "public".to_string(),
+            columns: vec![],
+            indexes: vec![],
+            constraints: vec![Constraint {
+                name: "fk_user".to_string(),
+                columns: vec!["user_id".to_string()],
+                constraint_type: ConstraintType::ForeignKey {
+                    foreign_table: "users".to_string(),
+                    foreign_columns: vec!["id".to_string()],
+                    on_delete: ReferentialAction::Cascade,
+                    on_update: ReferentialAction::NoAction,
+                },
+            }],
+            triggers: vec![],
+            comment: None,
+        };
+
+        assert!(table.is_foreign_key("user_id"));
+        assert!(!table.is_foreign_key("title"));
+    }
+}

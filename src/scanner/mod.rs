@@ -130,24 +130,7 @@ impl<'a> PostgresScanner<'a> {
             let column_default: Option<String> = col_row.get("column_default");
             let char_len: Option<i32> = col_row.get("character_maximum_length");
 
-            let data_type = match data_type_str.as_ref() {
-                "boolean" => PostgresDataType::Boolean,
-                "smallint" => PostgresDataType::SmallInt,
-                "integer" => PostgresDataType::Integer,
-                "bigint" => PostgresDataType::BigInt,
-                "real" => PostgresDataType::Real,
-                "double precision" => PostgresDataType::DoublePrecision,
-                "text" => PostgresDataType::Text,
-                "character varying" => PostgresDataType::Varchar(char_len.map(|l| l as u32)),
-                "character" => PostgresDataType::Character(char_len.map(|l| l as u32)),
-                "timestamp without time zone" => PostgresDataType::Timestamp(false),
-                "timestamp with time zone" => PostgresDataType::Timestamp(true),
-                "date" => PostgresDataType::Date,
-                "json" => PostgresDataType::Json,
-                "jsonb" => PostgresDataType::Jsonb,
-                "uuid" => PostgresDataType::Uuid,
-                _ => PostgresDataType::Custom(data_type_str),
-            };
+            let data_type = map_data_type(data_type_str.as_ref(), char_len);
 
             println!("Adding Column {}", col_name);
             columns.push(Column {
@@ -223,8 +206,8 @@ impl<'a> PostgresScanner<'a> {
                     ctype,
                     local_cols: Vec::new(),
                     foreign_table,
-                    update_action: update_rule.map(|r| self.map_referential_action(&r)),
-                    delete_action: delete_rule.map(|r| self.map_referential_action(&r)),
+                    update_action: update_rule.map(|r| map_referential_action(&r)),
+                    delete_action: delete_rule.map(|r| map_referential_action(&r)),
                     foreign_cols: Vec::new(),
                 });
 
@@ -394,16 +377,6 @@ impl<'a> PostgresScanner<'a> {
         Ok(triggers)
     }
 
-    fn map_referential_action(&self, action: &str) -> ReferentialAction {
-        match action {
-            "CASCADE" => ReferentialAction::Cascade,
-            "SET NULL" => ReferentialAction::SetNull,
-            "SET DEFAULT" => ReferentialAction::SetDefault,
-            "RESTRICT" => ReferentialAction::Restrict,
-            _ => ReferentialAction::NoAction,
-        }
-    }
-
     fn scan_enums(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
         let enum_query = "
             SELECT
@@ -558,5 +531,79 @@ impl<'a> PostgresScanner<'a> {
         }
 
         Ok(())
+    }
+}
+
+fn map_data_type(dt: &str, char_len: Option<i32>) -> PostgresDataType {
+    match dt {
+        "boolean" => PostgresDataType::Boolean,
+        "smallint" => PostgresDataType::SmallInt,
+        "integer" => PostgresDataType::Integer,
+        "bigint" => PostgresDataType::BigInt,
+        "real" => PostgresDataType::Real,
+        "double precision" => PostgresDataType::DoublePrecision,
+        "text" => PostgresDataType::Text,
+        "character varying" => PostgresDataType::Varchar(char_len.map(|l| l as u32)),
+        "character" => PostgresDataType::Character(char_len.map(|l| l as u32)),
+        "timestamp without time zone" => PostgresDataType::Timestamp(false),
+        "timestamp with time zone" => PostgresDataType::Timestamp(true),
+        "date" => PostgresDataType::Date,
+        "json" => PostgresDataType::Json,
+        "jsonb" => PostgresDataType::Jsonb,
+        "uuid" => PostgresDataType::Uuid,
+        _ => PostgresDataType::Custom(dt.to_string()),
+    }
+}
+
+fn map_referential_action(action: &str) -> ReferentialAction {
+    match action {
+        "CASCADE" => ReferentialAction::Cascade,
+        "SET NULL" => ReferentialAction::SetNull,
+        "SET DEFAULT" => ReferentialAction::SetDefault,
+        "RESTRICT" => ReferentialAction::Restrict,
+        _ => ReferentialAction::NoAction,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_map_data_type() {
+        assert_eq!(map_data_type("boolean", None), PostgresDataType::Boolean);
+        assert_eq!(map_data_type("integer", None), PostgresDataType::Integer);
+        assert_eq!(
+            map_data_type("character varying", Some(255)),
+            PostgresDataType::Varchar(Some(255))
+        );
+        assert_eq!(
+            map_data_type("timestamp with time zone", None),
+            PostgresDataType::Timestamp(true)
+        );
+        assert_eq!(
+            map_data_type("unknown_type", None),
+            PostgresDataType::Custom("unknown_type".to_string())
+        );
+    }
+
+    #[test]
+    fn test_map_referential_action() {
+        assert_eq!(
+            map_referential_action("CASCADE"),
+            ReferentialAction::Cascade
+        );
+        assert_eq!(
+            map_referential_action("SET NULL"),
+            ReferentialAction::SetNull
+        );
+        assert_eq!(
+            map_referential_action("RESTRICT"),
+            ReferentialAction::Restrict
+        );
+        assert_eq!(
+            map_referential_action("NO ACTION"),
+            ReferentialAction::NoAction
+        );
     }
 }
