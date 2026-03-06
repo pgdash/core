@@ -39,5 +39,6 @@ A high-performance Postgres management and introspection API server.
 - **Robust Error Handling**: Favor `match` or `if let` over `unwrap`/`expect` for all production paths.
 
 ## Infrastructure
-- **Git Hook**: A `pre-commit` hook ensures all staged `.rs` files are formatted with `rustfmt`, and that the project passes `cargo check` and `cargo clippy -- -D warnings` before each commit.
+- **Git Hooks**: Managed in the `.githooks/` directory. New contributors must run `git config core.hooksPath .githooks` once after cloning.
+- **Pre-commit**: The `pre-commit` hook ensures all staged `.rs` files are formatted with `rustfmt`, and that the project passes `cargo check` and `cargo clippy -- -D warnings` before each commit.
 - **CI/CD**: GitHub Actions handle build/test validation (`ci.yml`) and automated binary releases (`release.yml`) on version tags.

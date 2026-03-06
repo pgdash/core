@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Get list of staged Rust files
+STAGED_RS_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.rs$')
+
+if [ -n "$STAGED_RS_FILES" ]; then
+    echo "Formatting staged Rust files..."
+    # Format the specific files
+    rustfmt $STAGED_RS_FILES
+    # Re-add them to the commit
+    git add $STAGED_RS_FILES
+fi
+
+echo "Running cargo check..."
+if ! cargo check --quiet; then
+    echo "cargo check failed. Commit aborted."
+    exit 1
+fi
+
+echo "Running cargo clippy..."
+if ! cargo clippy --quiet -- -D warnings; then
+    echo "cargo clippy failed. Commit aborted."
+    exit 1
+fi
