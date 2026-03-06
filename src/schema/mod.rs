@@ -99,23 +99,25 @@ pub struct Table {
 
 impl Table {
     pub fn get_primary_key_columns(&self) -> Vec<&Column> {
-        let pk_columns: Vec<String> = self
+        // Zero-cost abstraction: Collect references rather than cloning Strings into a new Vec
+        let pk_columns: Vec<&String> = self
             .constraints
             .iter()
             .filter(|c| matches!(c.constraint_type, ConstraintType::PrimaryKey))
-            .flat_map(|c| c.columns.clone())
+            .flat_map(|c| c.columns.iter())
             .collect();
 
         self.columns
             .iter()
-            .filter(|col| pk_columns.contains(&col.name))
+            .filter(|col| pk_columns.contains(&&col.name))
             .collect()
     }
 
     pub fn is_foreign_key(&self, column_name: &str) -> bool {
         self.constraints.iter().any(|c| {
             matches!(c.constraint_type, ConstraintType::ForeignKey { .. })
-                && c.columns.contains(&column_name.to_string())
+                // Zero-cost abstraction: Use .iter().any to avoid heap allocating with .to_string()
+                && c.columns.iter().any(|col| col == column_name)
         })
     }
 }
