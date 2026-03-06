@@ -1,44 +1,74 @@
+use axum::{extract::State, response::Json, routing::get, Router};
+use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
 use pgdash_lib::scanner::PostgresScanner;
-use postgres::{Client, NoTls};
-use std::fs::File;
-use std::io::Write;
+use tokio_postgres::NoTls;
+use std::net::SocketAddr;
+use tracing::{error, info};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-fn main() {
+struct AppState {
+    pool: Pool,
+}
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     let db_url = "postgres://postgres:postgres@localhost/dvdrental?sslmode=disable";
+    let mut cfg = Config::new();
+    cfg.url = Some(db_url.to_string());
+    cfg.manager = Some(ManagerConfig {
+        recycling_method: RecyclingMethod::Fast,
+    });
 
-    println!("Connecting to {}...", db_url);
-    let mut client = match Client::connect(db_url, NoTls) {
-        Ok(c) => c,
+    let pool = cfg
+        .create_pool(Some(Runtime::Tokio1), NoTls)
+        .expect("Failed to create pool");
+
+    let state = std::sync::Arc::new(AppState { pool });
+
+    let app = Router::new()
+        .route("/health", get(health_check))
+        .route("/scan", get(scan_database))
+        .with_state(state);
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    info!("listening on {}", addr);
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn health_check() -> &'static str {
+    "OK"
+}
+
+async fn scan_database(
+    State(state): State<std::sync::Arc<AppState>>,
+) -> Result<Json<pgdash_lib::schema::Database>, (axum::http::StatusCode, String)> {
+    let conn = state.pool.get().await.map_err(|e| {
+        error!("Failed to get connection from pool: {}", e);
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Database connection error: {}", e),
+        )
+    })?;
+
+    let db_name = "dvdrental".to_string();
+    let scanner = PostgresScanner::new(&*conn);
+    
+    match scanner.scan(&db_name).await {
+        Ok(database) => Ok(Json(database)),
         Err(e) => {
-            eprintln!("Failed to connect to database: {}", e);
-            return;
-        }
-    };
-
-    let mut scanner = PostgresScanner::new(&mut client);
-
-    match scanner.scan("dvdrental") {
-        Ok(database) => {
-            println!("Successfully scanned database: {}", database.name);
-
-            let json = serde_json::to_string_pretty(&database)
-                .expect("Failed to serialize database to JSON");
-
-            let filename = format!("{}_schema.json", database.name);
-            let mut file = File::create(&filename).expect("Failed to create JSON file");
-            file.write_all(json.as_bytes())
-                .expect("Failed to write to JSON file");
-
-            println!("Schema written to {}", filename);
-
-            for (name, schema) in &database.schemas {
-                println!("Schema: {}", name);
-                println!("  Tables: {} found", schema.tables.len());
-                println!("  Views: {} found", schema.views.len());
-            }
-        }
-        Err(e) => {
-            eprintln!("Failed to scan database: {}", e);
+            error!("Scanner error: {}", e);
+            Err((
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to scan database: {}", e),
+            ))
         }
     }
 }

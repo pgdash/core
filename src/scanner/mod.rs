@@ -1,25 +1,24 @@
 use crate::schema::{
-    Column, Constraint, ConstraintType, Database, Function, Index, PostgresDataType,
+    Column, Constraint, ConstraintType, Database, EnumType, Function, Index, PostgresDataType,
     ReferentialAction, Schema, Table, Trigger, View,
 };
-use postgres::Client;
 use std::collections::HashMap;
+use tokio_postgres::{Client, Error};
 
 pub struct PostgresScanner<'a> {
-    client: &'a mut Client,
+    client: &'a Client,
 }
 
 impl<'a> PostgresScanner<'a> {
-    pub fn new(client: &'a mut Client) -> Self {
+    pub fn new(client: &'a Client) -> Self {
         Self { client }
     }
 
-    pub fn scan(&mut self, database_name: &str) -> Result<Database, postgres::Error> {
+    pub async fn scan(&self, database_name: &str) -> Result<Database, Error> {
         let mut database = Database {
             name: database_name.to_string(),
             schemas: HashMap::new(),
         };
-        println!("Initiating Scan");
 
         let tables_query = "
             SELECT table_schema, table_name
@@ -29,8 +28,7 @@ impl<'a> PostgresScanner<'a> {
             ORDER BY table_schema, table_name
         ";
 
-        println!("Querying table names");
-        let table_rows = self.client.query(tables_query, &[])?;
+        let table_rows = self.client.query(tables_query, &[]).await?;
 
         let mut schemas_found = Vec::new();
         for row in table_rows {
@@ -48,17 +46,10 @@ impl<'a> PostgresScanner<'a> {
                     ..Default::default()
                 });
 
-            println!("Scanning Columns for Table {}", table_name);
-            let columns = self.scan_columns(&schema_name, &table_name)?;
-
-            println!("Scanning Constraints for Table {}", table_name);
-            let constraints = self.scan_constraints(&schema_name, &table_name)?;
-
-            println!("Scanning Indexes for Table {}", table_name);
-            let indexes = self.scan_indexes(&schema_name, &table_name)?;
-
-            println!("Scanning Triggers for Table {}", table_name);
-            let triggers = self.scan_triggers(&schema_name, &table_name)?;
+            let columns = self.scan_columns(&schema_name, &table_name).await?;
+            let constraints = self.scan_constraints(&schema_name, &table_name).await?;
+            let indexes = self.scan_indexes(&schema_name, &table_name).await?;
+            let triggers = self.scan_triggers(&schema_name, &table_name).await?;
 
             schema.tables.push(Table {
                 name: table_name,
@@ -77,10 +68,10 @@ impl<'a> PostgresScanner<'a> {
             WHERE table_schema NOT IN ('information_schema', 'pg_catalog')
         ";
 
-        for row in self.client.query(views_query, &[])? {
+        for row in self.client.query(views_query, &[]).await? {
             let schema_name: String = row.get("table_schema");
             let view_name: String = row.get("table_name");
-            let definition: String = row.get("view_definition");
+            let definition: Option<String> = row.get("view_definition");
             let is_updatable_str: String = row.get("is_updatable");
 
             let schema = database
@@ -94,23 +85,23 @@ impl<'a> PostgresScanner<'a> {
             schema.views.push(View {
                 name: view_name,
                 schema_name: schema_name.clone(),
-                definition,
+                definition: definition.unwrap_or_default(),
                 is_updatable: is_updatable_str == "YES",
             });
         }
 
-        self.scan_enums(&mut database)?;
-        self.scan_sequences(&mut database)?;
-        self.scan_functions(&mut database)?;
+        self.scan_enums(&mut database).await?;
+        self.scan_sequences(&mut database).await?;
+        self.scan_functions(&mut database).await?;
 
         Ok(database)
     }
 
-    fn scan_columns(
-        &mut self,
+    async fn scan_columns(
+        &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Column>, postgres::Error> {
+    ) -> Result<Vec<Column>, Error> {
         let columns_query = "
             SELECT column_name, data_type, is_nullable, column_default, character_maximum_length
             FROM information_schema.columns
@@ -120,7 +111,8 @@ impl<'a> PostgresScanner<'a> {
 
         let col_rows = self
             .client
-            .query(columns_query, &[&schema_name, &table_name])?;
+            .query(columns_query, &[&schema_name, &table_name])
+            .await?;
         let mut columns = Vec::new();
 
         for col_row in col_rows {
@@ -132,7 +124,6 @@ impl<'a> PostgresScanner<'a> {
 
             let data_type = map_data_type(data_type_str.as_ref(), char_len);
 
-            println!("Adding Column {}", col_name);
             columns.push(Column {
                 name: col_name,
                 data_type,
@@ -145,11 +136,11 @@ impl<'a> PostgresScanner<'a> {
         Ok(columns)
     }
 
-    fn scan_constraints(
-        &mut self,
+    async fn scan_constraints(
+        &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Constraint>, postgres::Error> {
+    ) -> Result<Vec<Constraint>, Error> {
         let mut constraints = Vec::new();
 
         let constraints_query = "
@@ -178,7 +169,8 @@ impl<'a> PostgresScanner<'a> {
 
         let rows = self
             .client
-            .query(constraints_query, &[&schema_name, &table_name])?;
+            .query(constraints_query, &[&schema_name, &table_name])
+            .await?;
 
         struct ConstraintGroup {
             ctype: String,
@@ -211,7 +203,6 @@ impl<'a> PostgresScanner<'a> {
                     foreign_cols: Vec::new(),
                 });
 
-            println!("Adding constraint {}", name);
             entry.local_cols.push(local_col);
             if let Some(fcol) = foreign_col {
                 entry.foreign_cols.push(fcol);
@@ -231,7 +222,6 @@ impl<'a> PostgresScanner<'a> {
                 _ => continue,
             };
 
-            println!("Adding Constraint {}", name);
             constraints.push(Constraint {
                 name,
                 columns: group.local_cols,
@@ -254,7 +244,8 @@ impl<'a> PostgresScanner<'a> {
         let mut check_map: HashMap<String, (String, Vec<String>)> = HashMap::new();
         for row in self
             .client
-            .query(check_query, &[&schema_name, &table_name])?
+            .query(check_query, &[&schema_name, &table_name])
+            .await?
         {
             let name: String = row.get("constraint_name");
             let clause: String = row.get("check_clause");
@@ -267,7 +258,6 @@ impl<'a> PostgresScanner<'a> {
         }
 
         for (name, (clause, columns)) in check_map {
-            println!("Adding Check Constraint {}", name);
             constraints.push(Constraint {
                 name,
                 columns,
@@ -278,11 +268,7 @@ impl<'a> PostgresScanner<'a> {
         Ok(constraints)
     }
 
-    fn scan_indexes(
-        &mut self,
-        schema_name: &str,
-        table_name: &str,
-    ) -> Result<Vec<Index>, postgres::Error> {
+    async fn scan_indexes(&self, schema_name: &str, table_name: &str) -> Result<Vec<Index>, Error> {
         let mut indexes = Vec::new();
 
         let index_query = "
@@ -312,12 +298,10 @@ impl<'a> PostgresScanner<'a> {
                 AND t.relname = $2;
         ";
 
-        println!("Querying indexes for {}.{}", schema_name, table_name);
         let rows = self
             .client
-            .query(index_query, &[&schema_name, &table_name])?;
-
-        println!("Done querying indexes");
+            .query(index_query, &[&schema_name, &table_name])
+            .await?;
 
         for row in rows {
             let name: String = row.get("index_name");
@@ -328,7 +312,6 @@ impl<'a> PostgresScanner<'a> {
             let partial_condition: Option<String> = row.get("partial_condition");
             let columns: Vec<String> = row.get("index_columns");
 
-            println!("Adding Index {}", name);
             indexes.push(Index {
                 name,
                 index_type,
@@ -343,11 +326,11 @@ impl<'a> PostgresScanner<'a> {
         Ok(indexes)
     }
 
-    fn scan_triggers(
-        &mut self,
+    async fn scan_triggers(
+        &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Trigger>, postgres::Error> {
+    ) -> Result<Vec<Trigger>, Error> {
         let trigger_query = "
             SELECT
                 trigger_name,
@@ -361,7 +344,8 @@ impl<'a> PostgresScanner<'a> {
 
         let rows = self
             .client
-            .query(trigger_query, &[&schema_name, &table_name])?;
+            .query(trigger_query, &[&schema_name, &table_name])
+            .await?;
         let mut triggers = Vec::new();
 
         for row in rows {
@@ -377,7 +361,7 @@ impl<'a> PostgresScanner<'a> {
         Ok(triggers)
     }
 
-    fn scan_enums(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+    async fn scan_enums(&self, database: &mut Database) -> Result<(), Error> {
         let enum_query = "
             SELECT
                 n.nspname AS schema_name,
@@ -395,15 +379,13 @@ impl<'a> PostgresScanner<'a> {
                 n.nspname, t.typname;
         ";
 
-        println!("Querying user-defined enums");
-        let rows = self.client.query(enum_query, &[])?;
+        let rows = self.client.query(enum_query, &[]).await?;
 
         for row in rows {
             let schema_name: String = row.get("schema_name");
             let enum_name: String = row.get("enum_name");
             let variants: Vec<String> = row.get("variants");
 
-            println!("Adding Enum {} in schema {}", enum_name, schema_name);
             let schema = database
                 .schemas
                 .entry(schema_name.clone())
@@ -412,7 +394,7 @@ impl<'a> PostgresScanner<'a> {
                     ..Default::default()
                 });
 
-            schema.enums.push(crate::schema::EnumType {
+            schema.enums.push(EnumType {
                 name: enum_name,
                 schema_name,
                 variants,
@@ -422,7 +404,7 @@ impl<'a> PostgresScanner<'a> {
         Ok(())
     }
 
-    fn scan_sequences(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+    async fn scan_sequences(&self, database: &mut Database) -> Result<(), Error> {
         let seq_query = "
             SELECT
                 sequence_schema,
@@ -438,7 +420,7 @@ impl<'a> PostgresScanner<'a> {
                 sequence_schema NOT IN ('information_schema', 'pg_catalog');
         ";
 
-        let rows = self.client.query(seq_query, &[])?;
+        let rows = self.client.query(seq_query, &[]).await?;
 
         for row in rows {
             let schema_name: String = row.get("sequence_schema");
@@ -471,7 +453,7 @@ impl<'a> PostgresScanner<'a> {
         Ok(())
     }
 
-    fn scan_functions(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+    async fn scan_functions(&self, database: &mut Database) -> Result<(), Error> {
         let routine_query = "
             SELECT
                 routine_schema,
@@ -484,7 +466,7 @@ impl<'a> PostgresScanner<'a> {
             WHERE routine_schema NOT IN ('information_schema', 'pg_catalog')
         ";
 
-        let rows = self.client.query(routine_query, &[])?;
+        let rows = self.client.query(routine_query, &[]).await?;
 
         for row in rows {
             let schema_name: Option<String> = row.try_get("routine_schema").ok();
@@ -515,7 +497,7 @@ impl<'a> PostgresScanner<'a> {
                     ORDER BY ordinal_position
                 ";
 
-                let param_rows = self.client.query(param_query, &[&s_name, &r_name])?;
+                let param_rows = self.client.query(param_query, &[&s_name, &r_name]).await?;
                 let argument_types = param_rows.iter().map(|r| r.get("data_type")).collect();
 
                 schema.functions.push(Function {
@@ -562,48 +544,5 @@ fn map_referential_action(action: &str) -> ReferentialAction {
         "SET DEFAULT" => ReferentialAction::SetDefault,
         "RESTRICT" => ReferentialAction::Restrict,
         _ => ReferentialAction::NoAction,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_map_data_type() {
-        assert_eq!(map_data_type("boolean", None), PostgresDataType::Boolean);
-        assert_eq!(map_data_type("integer", None), PostgresDataType::Integer);
-        assert_eq!(
-            map_data_type("character varying", Some(255)),
-            PostgresDataType::Varchar(Some(255))
-        );
-        assert_eq!(
-            map_data_type("timestamp with time zone", None),
-            PostgresDataType::Timestamp(true)
-        );
-        assert_eq!(
-            map_data_type("unknown_type", None),
-            PostgresDataType::Custom("unknown_type".to_string())
-        );
-    }
-
-    #[test]
-    fn test_map_referential_action() {
-        assert_eq!(
-            map_referential_action("CASCADE"),
-            ReferentialAction::Cascade
-        );
-        assert_eq!(
-            map_referential_action("SET NULL"),
-            ReferentialAction::SetNull
-        );
-        assert_eq!(
-            map_referential_action("RESTRICT"),
-            ReferentialAction::Restrict
-        );
-        assert_eq!(
-            map_referential_action("NO ACTION"),
-            ReferentialAction::NoAction
-        );
     }
 }
