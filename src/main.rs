@@ -1,8 +1,8 @@
-use axum::{extract::State, response::Json, routing::get, Router};
+use axum::{Router, extract::State, response::Json, routing::get};
 use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
 use pgdash_lib::scanner::PostgresScanner;
-use tokio_postgres::NoTls;
 use std::net::SocketAddr;
+use tokio_postgres::NoTls;
 use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -60,7 +60,7 @@ async fn scan_database(
 
     let db_name = "dvdrental".to_string();
     let scanner = PostgresScanner::new(&*conn);
-    
+
     match scanner.scan(&db_name).await {
         Ok(database) => Ok(Json(database)),
         Err(e) => {
