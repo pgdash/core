@@ -81,7 +81,7 @@ impl<'a> PostgresScanner<'a> {
             let schema_name: String = row.get("table_schema");
             let view_name: String = row.get("table_name");
             let definition: String = row.get("view_definition");
-            let is_updatable_str: String = row.get("is_updatable");
+            let is_updatable_str: &str = row.get("is_updatable");
 
             let schema = database
                 .schemas
@@ -125,12 +125,12 @@ impl<'a> PostgresScanner<'a> {
 
         for col_row in col_rows {
             let col_name: String = col_row.get("column_name");
-            let data_type_str: String = col_row.get("data_type");
-            let is_nullable_str: String = col_row.get("is_nullable");
+            let data_type_str: &str = col_row.get("data_type");
+            let is_nullable_str: &str = col_row.get("is_nullable");
             let column_default: Option<String> = col_row.get("column_default");
             let char_len: Option<i32> = col_row.get("character_maximum_length");
 
-            let data_type = map_data_type(data_type_str.as_ref(), char_len);
+            let data_type = map_data_type(data_type_str, char_len);
 
             println!("Adding Column {}", col_name);
             columns.push(Column {
@@ -489,7 +489,7 @@ impl<'a> PostgresScanner<'a> {
         for row in rows {
             let schema_name: Option<String> = row.try_get("routine_schema").ok();
             let routine_name: Option<String> = row.try_get("routine_name").ok();
-            let routine_type: Option<String> = row.try_get("routine_type").ok();
+            let routine_type: Option<&str> = row.try_get("routine_type").ok();
             let return_type: Option<String> = row.try_get("return_type").ok();
             let definition: Option<String> = row.try_get("routine_definition").ok();
             let language: Option<String> = row.try_get("external_language").ok();
