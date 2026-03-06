@@ -349,10 +349,10 @@ impl<'a> PostgresScanner<'a> {
         table_name: &str,
     ) -> Result<Vec<Trigger>, postgres::Error> {
         let trigger_query = "
-            SELECT 
-                trigger_name, 
-                event_manipulation, 
-                action_statement, 
+            SELECT
+                trigger_name,
+                event_manipulation,
+                action_statement,
                 action_timing,
                 action_condition
             FROM information_schema.triggers
@@ -473,7 +473,7 @@ impl<'a> PostgresScanner<'a> {
 
     fn scan_functions(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
         let routine_query = "
-            SELECT 
+            SELECT
                 routine_schema,
                 routine_name,
                 routine_type,
@@ -507,8 +507,8 @@ impl<'a> PostgresScanner<'a> {
                     SELECT data_type
                     FROM information_schema.parameters
                     WHERE specific_schema = $1 AND specific_name = (
-                        SELECT specific_name 
-                        FROM information_schema.routines 
+                        SELECT specific_name
+                        FROM information_schema.routines
                         WHERE routine_schema = $1 AND routine_name = $2
                         LIMIT 1
                     )
