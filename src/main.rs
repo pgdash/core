@@ -59,7 +59,7 @@ async fn scan_database(
     })?;
 
     let db_name = "dvdrental".to_string();
-    let scanner = PostgresScanner::new(&*conn);
+    let scanner = PostgresScanner::new(&conn);
 
     match scanner.scan(&db_name).await {
         Ok(database) => Ok(Json(database)),
