@@ -1,6 +1,6 @@
 use crate::schema::{
-    Column, Constraint, ConstraintType, Database, Index, PostgresDataType, ReferentialAction,
-    Schema, Table, View, Trigger, Function,
+    Column, Constraint, ConstraintType, Database, Function, Index, PostgresDataType,
+    ReferentialAction, Schema, Table, Trigger, View,
 };
 use postgres::Client;
 use std::collections::HashMap;
@@ -376,7 +376,9 @@ impl<'a> PostgresScanner<'a> {
             WHERE event_object_schema = $1 AND event_object_table = $2
         ";
 
-        let rows = self.client.query(trigger_query, &[&schema_name, &table_name])?;
+        let rows = self
+            .client
+            .query(trigger_query, &[&schema_name, &table_name])?;
         let mut triggers = Vec::new();
 
         for row in rows {
@@ -539,7 +541,7 @@ impl<'a> PostgresScanner<'a> {
                     )
                     ORDER BY ordinal_position
                 ";
-                
+
                 let param_rows = self.client.query(param_query, &[&s_name, &r_name])?;
                 let argument_types = param_rows.iter().map(|r| r.get("data_type")).collect();
 
