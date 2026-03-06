@@ -237,10 +237,10 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "2200_16460_5_not_null",
+              "name": "2200_16460_8_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "city_id IS NOT NULL"
+                "Check": "last_update IS NOT NULL"
               }
             },
             {
@@ -251,17 +251,10 @@
               }
             },
             {
-              "name": "2200_16460_7_not_null",
+              "name": "2200_16460_5_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "phone IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16460_8_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
+                "Check": "city_id IS NOT NULL"
               }
             },
             {
@@ -276,6 +269,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "address IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16460_7_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "phone IS NOT NULL"
               }
             }
           ],
@@ -342,13 +342,6 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "2200_16429_3_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16429_1_not_null",
               "columns": [],
               "constraint_type": {
@@ -360,6 +353,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "name IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16429_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -437,6 +437,13 @@
           ],
           "constraints": [
             {
+              "name": "city_pkey",
+              "columns": [
+                "city_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "fk_city",
               "columns": [
                 "country_id"
@@ -453,11 +460,11 @@
               }
             },
             {
-              "name": "city_pkey",
-              "columns": [
-                "city_id"
-              ],
-              "constraint_type": "PrimaryKey"
+              "name": "2200_16466_4_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
+              }
             },
             {
               "name": "2200_16466_2_not_null",
@@ -471,13 +478,6 @@
               "columns": [],
               "constraint_type": {
                 "Check": "country_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16466_4_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
               }
             },
             {
@@ -551,6 +551,13 @@
               "constraint_type": "PrimaryKey"
             },
             {
+              "name": "2200_16472_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16472_1_not_null",
               "columns": [],
               "constraint_type": {
@@ -562,13 +569,6 @@
               "columns": [],
               "constraint_type": {
                 "Check": "country IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16472_3_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
               }
             }
           ],
@@ -714,6 +714,13 @@
           ],
           "constraints": [
             {
+              "name": "customer_pkey",
+              "columns": [
+                "customer_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "customer_address_id_fkey",
               "columns": [
                 "address_id"
@@ -730,24 +737,17 @@
               }
             },
             {
-              "name": "customer_pkey",
-              "columns": [
-                "customer_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16413_4_not_null",
+              "name": "2200_16413_8_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "last_name IS NOT NULL"
+                "Check": "create_date IS NOT NULL"
               }
             },
             {
-              "name": "2200_16413_2_not_null",
+              "name": "2200_16413_3_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "store_id IS NOT NULL"
+                "Check": "first_name IS NOT NULL"
               }
             },
             {
@@ -765,10 +765,10 @@
               }
             },
             {
-              "name": "2200_16413_8_not_null",
+              "name": "2200_16413_4_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "create_date IS NOT NULL"
+                "Check": "last_name IS NOT NULL"
               }
             },
             {
@@ -779,10 +779,10 @@
               }
             },
             {
-              "name": "2200_16413_3_not_null",
+              "name": "2200_16413_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "first_name IS NOT NULL"
+                "Check": "store_id IS NOT NULL"
               }
             }
           ],
@@ -978,6 +978,41 @@
               "constraint_type": "PrimaryKey"
             },
             {
+              "name": "2200_16435_2_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "title IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16435_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "film_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16435_5_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "language_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16435_9_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "replacement_cost IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16435_6_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "rental_duration IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16435_11_not_null",
               "columns": [],
               "constraint_type": {
@@ -996,41 +1031,6 @@
               "columns": [],
               "constraint_type": {
                 "Check": "rental_rate IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "title IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_9_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "replacement_cost IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "film_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_5_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "language_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16435_6_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "rental_duration IS NOT NULL"
               }
             }
           ],
@@ -1114,6 +1114,14 @@
           ],
           "constraints": [
             {
+              "name": "film_actor_pkey",
+              "columns": [
+                "actor_id",
+                "film_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "film_actor_actor_id_fkey",
               "columns": [
                 "actor_id"
@@ -1144,14 +1152,6 @@
                   "on_update": "Cascade"
                 }
               }
-            },
-            {
-              "name": "film_actor_pkey",
-              "columns": [
-                "actor_id",
-                "film_id"
-              ],
-              "constraint_type": "PrimaryKey"
             },
             {
               "name": "2200_16446_1_not_null",
@@ -1230,14 +1230,6 @@
           ],
           "constraints": [
             {
-              "name": "film_category_pkey",
-              "columns": [
-                "film_id",
-                "category_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
               "name": "film_category_film_id_fkey",
               "columns": [
                 "film_id"
@@ -1252,6 +1244,14 @@
                   "on_update": "Cascade"
                 }
               }
+            },
+            {
+              "name": "film_category_pkey",
+              "columns": [
+                "film_id",
+                "category_id"
+              ],
+              "constraint_type": "PrimaryKey"
             },
             {
               "name": "film_category_category_id_fkey",
@@ -1387,20 +1387,6 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "2200_16488_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "film_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16488_3_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "store_id IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16488_4_not_null",
               "columns": [],
               "constraint_type": {
@@ -1412,6 +1398,20 @@
               "columns": [],
               "constraint_type": {
                 "Check": "inventory_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16488_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "store_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16488_2_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "film_id IS NOT NULL"
               }
             }
           ],
@@ -1478,13 +1478,6 @@
               "constraint_type": "PrimaryKey"
             },
             {
-              "name": "2200_16494_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "language_id IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16494_2_not_null",
               "columns": [],
               "constraint_type": {
@@ -1496,6 +1489,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "last_update IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16494_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "language_id IS NOT NULL"
               }
             }
           ],
@@ -1625,6 +1625,13 @@
               }
             },
             {
+              "name": "payment_pkey",
+              "columns": [
+                "payment_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "payment_customer_id_fkey",
               "columns": [
                 "customer_id"
@@ -1657,24 +1664,10 @@
               }
             },
             {
-              "name": "payment_pkey",
-              "columns": [
-                "payment_id"
-              ],
-              "constraint_type": "PrimaryKey"
-            },
-            {
-              "name": "2200_16505_1_not_null",
+              "name": "2200_16505_2_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "payment_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16505_4_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "rental_id IS NOT NULL"
+                "Check": "customer_id IS NOT NULL"
               }
             },
             {
@@ -1685,10 +1678,10 @@
               }
             },
             {
-              "name": "2200_16505_2_not_null",
+              "name": "2200_16505_4_not_null",
               "columns": [],
               "constraint_type": {
-                "Check": "customer_id IS NOT NULL"
+                "Check": "rental_id IS NOT NULL"
               }
             },
             {
@@ -1703,6 +1696,13 @@
               "columns": [],
               "constraint_type": {
                 "Check": "staff_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16505_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "payment_id IS NOT NULL"
               }
             }
           ],
@@ -1808,11 +1808,20 @@
           ],
           "constraints": [
             {
-              "name": "rental_pkey",
+              "name": "rental_staff_id_key",
               "columns": [
-                "rental_id"
+                "staff_id"
               ],
-              "constraint_type": "PrimaryKey"
+              "constraint_type": {
+                "ForeignKey": {
+                  "foreign_table": "staff",
+                  "foreign_columns": [
+                    "staff_id"
+                  ],
+                  "on_delete": "NoAction",
+                  "on_update": "NoAction"
+                }
+              }
             },
             {
               "name": "rental_customer_id_fkey",
@@ -1847,47 +1856,17 @@
               }
             },
             {
-              "name": "rental_staff_id_key",
+              "name": "rental_pkey",
               "columns": [
-                "staff_id"
+                "rental_id"
               ],
-              "constraint_type": {
-                "ForeignKey": {
-                  "foreign_table": "staff",
-                  "foreign_columns": [
-                    "staff_id"
-                  ],
-                  "on_delete": "NoAction",
-                  "on_update": "NoAction"
-                }
-              }
+              "constraint_type": "PrimaryKey"
             },
             {
               "name": "2200_16510_1_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "rental_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16510_7_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16510_3_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "inventory_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16510_2_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "rental_date IS NOT NULL"
               }
             },
             {
@@ -1902,6 +1881,27 @@
               "columns": [],
               "constraint_type": {
                 "Check": "customer_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16510_3_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "inventory_id IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16510_7_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16510_2_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "rental_date IS NOT NULL"
               }
             }
           ],
@@ -2050,6 +2050,27 @@
               }
             },
             {
+              "name": "2200_16521_10_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "last_update IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_7_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "active IS NOT NULL"
+              }
+            },
+            {
+              "name": "2200_16521_1_not_null",
+              "columns": [],
+              "constraint_type": {
+                "Check": "staff_id IS NOT NULL"
+              }
+            },
+            {
               "name": "2200_16521_2_not_null",
               "columns": [],
               "constraint_type": {
@@ -2064,31 +2085,10 @@
               }
             },
             {
-              "name": "2200_16521_7_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "active IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16521_10_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "last_update IS NOT NULL"
-              }
-            },
-            {
               "name": "2200_16521_4_not_null",
               "columns": [],
               "constraint_type": {
                 "Check": "address_id IS NOT NULL"
-              }
-            },
-            {
-              "name": "2200_16521_1_not_null",
-              "columns": [],
-              "constraint_type": {
-                "Check": "staff_id IS NOT NULL"
               }
             },
             {
@@ -2178,6 +2178,13 @@
           ],
           "constraints": [
             {
+              "name": "store_pkey",
+              "columns": [
+                "store_id"
+              ],
+              "constraint_type": "PrimaryKey"
+            },
+            {
               "name": "store_manager_staff_id_fkey",
               "columns": [
                 "manager_staff_id"
@@ -2192,13 +2199,6 @@
                   "on_update": "Cascade"
                 }
               }
-            },
-            {
-              "name": "store_pkey",
-              "columns": [
-                "store_id"
-              ],
-              "constraint_type": "PrimaryKey"
             },
             {
               "name": "store_address_id_fkey",
