@@ -1,6 +1,6 @@
 use crate::schema::{
     Column, Constraint, ConstraintType, Database, Index, PostgresDataType, ReferentialAction,
-    Schema, Table, View,
+    Schema, Table, View, Trigger, Function,
 };
 use postgres::Client;
 use std::collections::HashMap;
@@ -57,13 +57,16 @@ impl<'a> PostgresScanner<'a> {
             println!("Scanning Indexes for Table {}", table_name);
             let indexes = self.scan_indexes(&schema_name, &table_name)?;
 
+            println!("Scanning Triggers for Table {}", table_name);
+            let triggers = self.scan_triggers(&schema_name, &table_name)?;
+
             schema.tables.push(Table {
                 name: table_name,
                 schema_name: schema_name.clone(),
                 columns,
                 indexes,
                 constraints,
-                triggers: Vec::new(),
+                triggers,
                 comment: None,
             });
         }
@@ -97,8 +100,8 @@ impl<'a> PostgresScanner<'a> {
         }
 
         self.scan_enums(&mut database)?;
-
         self.scan_sequences(&mut database)?;
+        self.scan_functions(&mut database)?;
 
         Ok(database)
     }
@@ -357,6 +360,38 @@ impl<'a> PostgresScanner<'a> {
         Ok(indexes)
     }
 
+    fn scan_triggers(
+        &mut self,
+        schema_name: &str,
+        table_name: &str,
+    ) -> Result<Vec<Trigger>, postgres::Error> {
+        let trigger_query = "
+            SELECT 
+                trigger_name, 
+                event_manipulation, 
+                action_statement, 
+                action_timing,
+                action_condition
+            FROM information_schema.triggers
+            WHERE event_object_schema = $1 AND event_object_table = $2
+        ";
+
+        let rows = self.client.query(trigger_query, &[&schema_name, &table_name])?;
+        let mut triggers = Vec::new();
+
+        for row in rows {
+            triggers.push(Trigger {
+                name: row.get("trigger_name"),
+                event_manipulation: row.get("event_manipulation"),
+                action_statement: row.get("action_statement"),
+                action_timing: row.get("action_timing"),
+                action_condition: row.get("action_condition"),
+            });
+        }
+
+        Ok(triggers)
+    }
+
     fn map_referential_action(&self, action: &str) -> ReferentialAction {
         match action {
             "CASCADE" => ReferentialAction::Cascade,
@@ -456,6 +491,68 @@ impl<'a> PostgresScanner<'a> {
                 max_value,
                 cycle: cycle_option == "YES",
             });
+        }
+
+        Ok(())
+    }
+
+    fn scan_functions(&mut self, database: &mut Database) -> Result<(), postgres::Error> {
+        let routine_query = "
+            SELECT 
+                routine_schema,
+                routine_name,
+                routine_type,
+                data_type AS return_type,
+                routine_definition,
+                external_language
+            FROM information_schema.routines
+            WHERE routine_schema NOT IN ('information_schema', 'pg_catalog')
+        ";
+
+        let rows = self.client.query(routine_query, &[])?;
+
+        for row in rows {
+            let schema_name: Option<String> = row.try_get("routine_schema").ok();
+            let routine_name: Option<String> = row.try_get("routine_name").ok();
+            let routine_type: Option<String> = row.try_get("routine_type").ok();
+            let return_type: Option<String> = row.try_get("return_type").ok();
+            let definition: Option<String> = row.try_get("routine_definition").ok();
+            let language: Option<String> = row.try_get("external_language").ok();
+
+            if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
+                let schema = database
+                    .schemas
+                    .entry(s_name.clone())
+                    .or_insert_with(|| Schema {
+                        name: s_name.clone(),
+                        ..Default::default()
+                    });
+
+                let param_query = "
+                    SELECT data_type
+                    FROM information_schema.parameters
+                    WHERE specific_schema = $1 AND specific_name = (
+                        SELECT specific_name 
+                        FROM information_schema.routines 
+                        WHERE routine_schema = $1 AND routine_name = $2
+                        LIMIT 1
+                    )
+                    ORDER BY ordinal_position
+                ";
+                
+                let param_rows = self.client.query(param_query, &[&s_name, &r_name])?;
+                let argument_types = param_rows.iter().map(|r| r.get("data_type")).collect();
+
+                schema.functions.push(Function {
+                    name: r_name,
+                    schema_name: s_name,
+                    argument_types,
+                    return_type: return_type.unwrap_or_else(|| "void".to_string()),
+                    definition: definition.unwrap_or_default(),
+                    language: language.unwrap_or_else(|| "sql".to_string()),
+                    is_procedure: routine_type.map(|t| t == "PROCEDURE").unwrap_or(false),
+                });
+            }
         }
 
         Ok(())

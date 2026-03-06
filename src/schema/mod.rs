@@ -83,6 +83,7 @@ pub struct Trigger {
     pub event_manipulation: String, // can be INSERT, UPDATE, DELETE
     pub action_statement: String,
     pub action_timing: String, // can be BEFORE, AFTER, INSTEAD OF
+    pub action_condition: Option<String>, // the WHEN clause
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
