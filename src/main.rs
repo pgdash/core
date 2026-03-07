@@ -1,13 +1,15 @@
-use axum::{Router, extract::State, response::Json, routing::get};
-use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
+use axum::{Router, extract::Json, routing::post};
 use pgdash_lib::scanner::PostgresScanner;
+use serde::Deserialize;
 use std::net::SocketAddr;
 use tokio_postgres::NoTls;
 use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-struct AppState {
-    pool: Pool,
+#[derive(Deserialize)]
+struct ScanRequest {
+    db_url: String,
+    db_name: String,
 }
 
 #[tokio::main]
@@ -19,23 +21,9 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let db_url = "postgres://postgres:postgres@localhost/dvdrental?sslmode=disable";
-    let mut cfg = Config::new();
-    cfg.url = Some(db_url.to_string());
-    cfg.manager = Some(ManagerConfig {
-        recycling_method: RecyclingMethod::Fast,
-    });
-
-    let pool = cfg
-        .create_pool(Some(Runtime::Tokio1), NoTls)
-        .expect("Failed to create pool");
-
-    let state = std::sync::Arc::new(AppState { pool });
-
     let app = Router::new()
-        .route("/health", get(health_check))
-        .route("/scan", get(scan_database))
-        .with_state(state);
+        .route("/health", axum::routing::get(health_check))
+        .route("/scan", post(scan_database));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     info!("listening on {}", addr);
@@ -48,20 +36,27 @@ async fn health_check() -> &'static str {
 }
 
 async fn scan_database(
-    State(state): State<std::sync::Arc<AppState>>,
+    Json(payload): Json<ScanRequest>,
 ) -> Result<Json<pgdash_lib::schema::Database>, (axum::http::StatusCode, String)> {
-    let conn = state.pool.get().await.map_err(|e| {
-        error!("Failed to get connection from pool: {}", e);
-        (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Database connection error: {}", e),
-        )
-    })?;
+    let (client, connection) = tokio_postgres::connect(&payload.db_url, NoTls)
+        .await
+        .map_err(|e| {
+            error!("Failed to connect: {}", e);
+            (
+                axum::http::StatusCode::BAD_REQUEST,
+                format!("Connection error: {}", e),
+            )
+        })?;
 
-    let db_name = "dvdrental".to_string();
-    let scanner = PostgresScanner::new(&conn);
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            error!("Connection error: {}", e);
+        }
+    });
 
-    match scanner.scan(&db_name).await {
+    let scanner = PostgresScanner::new(&client);
+
+    match scanner.scan(&payload.db_name).await {
         Ok(database) => Ok(Json(database)),
         Err(e) => {
             error!("Scanner error: {}", e);
