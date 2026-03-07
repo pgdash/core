@@ -72,7 +72,9 @@ impl<'a> PostgresScanner<'a> {
             let schema_name: String = row.get("table_schema");
             let view_name: String = row.get("table_name");
             let definition: Option<String> = row.get("view_definition");
-            let is_updatable_str: String = row.get("is_updatable");
+            // Bolt optimization: Fetching small metadata fields directly as `&str` instead of `String`
+            // avoids unnecessary heap allocations and speeds up scanning.
+            let is_updatable_str: &str = row.get("is_updatable");
 
             let schema = database
                 .schemas
@@ -117,12 +119,13 @@ impl<'a> PostgresScanner<'a> {
 
         for col_row in col_rows {
             let col_name: String = col_row.get("column_name");
-            let data_type_str: String = col_row.get("data_type");
-            let is_nullable_str: String = col_row.get("is_nullable");
+            // Bolt optimization: Fetch text fields directly as zero-copy `&str` to avoid allocations.
+            let data_type_str: &str = col_row.get("data_type");
+            let is_nullable_str: &str = col_row.get("is_nullable");
             let column_default: Option<String> = col_row.get("column_default");
             let char_len: Option<i32> = col_row.get("character_maximum_length");
 
-            let data_type = map_data_type(data_type_str.as_ref(), char_len);
+            let data_type = map_data_type(data_type_str, char_len);
 
             columns.push(Column {
                 name: col_name,
@@ -189,8 +192,9 @@ impl<'a> PostgresScanner<'a> {
             let local_col: String = row.get("local_column");
             let foreign_table: Option<String> = row.get("foreign_table");
             let foreign_col: Option<String> = row.get("foreign_column");
-            let update_rule: Option<String> = row.get("update_rule");
-            let delete_rule: Option<String> = row.get("delete_rule");
+            // Bolt optimization: Avoiding `String` allocation for constraint rules mapped instantly.
+            let update_rule: Option<&str> = row.get("update_rule");
+            let delete_rule: Option<&str> = row.get("delete_rule");
 
             let entry = constraint_map
                 .entry(name.clone())
@@ -198,8 +202,8 @@ impl<'a> PostgresScanner<'a> {
                     ctype,
                     local_cols: Vec::new(),
                     foreign_table,
-                    update_action: update_rule.map(|r| map_referential_action(&r)),
-                    delete_action: delete_rule.map(|r| map_referential_action(&r)),
+                    update_action: update_rule.map(map_referential_action),
+                    delete_action: delete_rule.map(map_referential_action),
                     foreign_cols: Vec::new(),
                 });
 
@@ -429,7 +433,8 @@ impl<'a> PostgresScanner<'a> {
             let increment: i64 = row.get("increment");
             let min_value: i64 = row.get("minimum_value");
             let max_value: i64 = row.get("maximum_value");
-            let cycle_option: String = row.get("cycle_option");
+            // Bolt optimization: Avoiding `String` allocation for a simple 'YES'/'NO' field.
+            let cycle_option: &str = row.get("cycle_option");
 
             let schema = database
                 .schemas
@@ -471,7 +476,8 @@ impl<'a> PostgresScanner<'a> {
         for row in rows {
             let schema_name: Option<String> = row.try_get("routine_schema").ok();
             let routine_name: Option<String> = row.try_get("routine_name").ok();
-            let routine_type: Option<String> = row.try_get("routine_type").ok();
+            // Bolt optimization: Zero-copy `&str` instead of `String` for the routine type check.
+            let routine_type: Option<&str> = row.try_get("routine_type").ok();
             let return_type: Option<String> = row.try_get("return_type").ok();
             let definition: Option<String> = row.try_get("routine_definition").ok();
             let language: Option<String> = row.try_get("external_language").ok();
@@ -507,7 +513,7 @@ impl<'a> PostgresScanner<'a> {
                     return_type: return_type.unwrap_or_else(|| "void".to_string()),
                     definition: definition.unwrap_or_default(),
                     language: language.unwrap_or_else(|| "sql".to_string()),
-                    is_procedure: routine_type.map(|t| t == "PROCEDURE").unwrap_or(false),
+                    is_procedure: routine_type.is_some_and(|t| t == "PROCEDURE"),
                 });
             }
         }

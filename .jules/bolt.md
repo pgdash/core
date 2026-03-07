@@ -10,3 +10,7 @@ Instead, by utilizing references, iterators, and zero-cost abstraction technique
 - When creating an intermediate collection of strings to check against, collect string references (`Vec<&String>`) instead of owned strings (`Vec<String>`). Use `.flat_map(|c| c.columns.iter())` rather than `.flat_map(|c| c.columns.clone())`.
 
 These small changes can yield massive performance gains, especially inside loops or hot paths. In our test, replacing these allocations inside `is_foreign_key` improved performance from ~29.1s to ~7.3s for 10 million iterations.
+
+### Zero-Copy Text Fetching from Postgres Rows
+
+When pulling temporary metadata fields (like schema names, definitions, or type properties) from `postgres::Row` (or `tokio_postgres::Row`), we can map directly to `&str` instead of `String`. Utilizing `let data_type_str: &str = row.get("data_type");` prevents allocating intermediate memory on the heap before we immediately consume or map that string data. This is especially impactful in metadata scanning loops where `Row` data is quickly discarded.
