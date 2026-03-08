@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, utoipa::ToSchema)]
 #[schema(no_recursion)]
+#[serde(tag = "type", content = "data")]
 pub enum PostgresDataType {
     Boolean,
     SmallInt,
@@ -10,14 +10,25 @@ pub enum PostgresDataType {
     BigInt,
     Real,
     DoublePrecision,
-    Numeric(Option<u32>, Option<u32>), // precision, scale
-    Character(Option<u32>),
-    Varchar(Option<u32>),
+    Numeric {
+        precision: Option<u32>,
+        scale: Option<u32>,
+    },
+    Character {
+        length: Option<u32>,
+    },
+    Varchar {
+        length: Option<u32>,
+    },
     Text,
     Bytea,
     Date,
-    Timestamp(bool), // bool in team stands for with/without time zone
-    Time(bool),
+    Timestamp {
+        with_time_zone: bool,
+    },
+    Time {
+        with_time_zone: bool,
+    },
     Interval,
     Json,
     Jsonb,
@@ -25,8 +36,12 @@ pub enum PostgresDataType {
     Inet,
     Cidr,
     MacAddr,
-    Array(Box<PostgresDataType>),
-    Custom(String), // for user-defined types or enums
+    Array {
+        element_type: Box<PostgresDataType>,
+    },
+    Custom {
+        name: String,
+    }, // for user-defined types or enums
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
@@ -39,11 +54,13 @@ pub enum ReferentialAction {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
+#[serde(tag = "type", content = "data")]
 pub enum ConstraintType {
     PrimaryKey,
     Unique,
     Check(String), // constraint definition
     ForeignKey {
+        foreign_schema: String,
         foreign_table: String,
         foreign_columns: Vec<String>,
         on_delete: ReferentialAction,
@@ -89,6 +106,7 @@ pub struct Trigger {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Table {
+    pub oid: u32,
     pub name: String,
     pub schema_name: String,
     pub columns: Vec<Column>,
@@ -125,6 +143,7 @@ impl Table {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct View {
+    pub oid: u32,
     pub name: String,
     pub schema_name: String,
     pub definition: String,
@@ -133,6 +152,7 @@ pub struct View {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EnumType {
+    pub oid: u32,
     pub name: String,
     pub schema_name: String,
     pub variants: Vec<String>,
@@ -140,6 +160,7 @@ pub struct EnumType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Sequence {
+    pub oid: u32,
     pub name: String,
     pub schema_name: String,
     pub start_value: i64,
@@ -151,6 +172,7 @@ pub struct Sequence {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Function {
+    pub oid: u32,
     pub name: String,
     pub schema_name: String,
     pub argument_types: Vec<String>,
@@ -162,6 +184,7 @@ pub struct Function {
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Schema {
+    pub oid: u32,
     pub name: String,
     pub tables: Vec<Table>,
     pub views: Vec<View>,
@@ -173,7 +196,7 @@ pub struct Schema {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Database {
     pub name: String,
-    pub schemas: HashMap<String, Schema>,
+    pub schemas: Vec<Schema>,
 }
 
 #[cfg(test)]
@@ -198,6 +221,7 @@ mod tests {
         };
 
         let table = Table {
+            oid: 1,
             name: "users".to_string(),
             schema_name: "public".to_string(),
             columns: vec![col1.clone(), col2.clone()],
@@ -219,6 +243,7 @@ mod tests {
     #[test]
     fn test_table_is_foreign_key() {
         let table = Table {
+            oid: 2,
             name: "posts".to_string(),
             schema_name: "public".to_string(),
             columns: vec![],
@@ -227,6 +252,7 @@ mod tests {
                 name: "fk_user".to_string(),
                 columns: vec!["user_id".to_string()],
                 constraint_type: ConstraintType::ForeignKey {
+                    foreign_schema: "public".to_string(),
                     foreign_table: "users".to_string(),
                     foreign_columns: vec!["id".to_string()],
                     on_delete: ReferentialAction::Cascade,
