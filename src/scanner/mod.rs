@@ -46,10 +46,12 @@ impl<'a> PostgresScanner<'a> {
                     ..Default::default()
                 });
 
-            let columns = self.scan_columns(&schema_name, &table_name).await?;
-            let constraints = self.scan_constraints(&schema_name, &table_name).await?;
-            let indexes = self.scan_indexes(&schema_name, &table_name).await?;
-            let triggers = self.scan_triggers(&schema_name, &table_name).await?;
+            let (columns, constraints, indexes, triggers) = tokio::try_join!(
+                self.scan_columns(&schema_name, &table_name),
+                self.scan_constraints(&schema_name, &table_name),
+                self.scan_indexes(&schema_name, &table_name),
+                self.scan_triggers(&schema_name, &table_name),
+            )?;
 
             schema.tables.push(Table {
                 name: table_name,
