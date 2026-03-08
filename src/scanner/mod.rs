@@ -3,27 +3,31 @@ use crate::schema::{
     ReferentialAction, Schema, Table, Trigger, View,
 };
 use std::collections::HashMap;
-use tokio_postgres::{Client, Error};
 use tracing::{info, warn};
+use traits::{DatabaseClient, DatabaseRow};
 
-pub struct PostgresScanner<'a> {
-    client: &'a Client,
+#[cfg(test)]
+pub mod mock;
+pub mod traits;
+
+pub struct PostgresScanner<'a, C: DatabaseClient> {
+    client: &'a C,
 }
 
-impl<'a> PostgresScanner<'a> {
-    pub fn new(client: &'a Client) -> Self {
+impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
+    pub fn new(client: &'a C) -> Self {
         Self { client }
     }
 
-    pub async fn scan(&self, database_name: &str) -> Result<Database, Error> {
+    pub async fn scan(&self, database_name: &str) -> Result<Database, String> {
         let mut schemas_map: HashMap<String, Schema> = HashMap::new();
 
         let schema_query = "SELECT oid, nspname FROM pg_namespace WHERE nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast')";
 
         info!("Scanning schemas");
         for row in self.client.query(schema_query, &[]).await? {
-            let oid: u32 = row.get("oid");
-            let name: String = row.get("nspname");
+            let oid: u32 = row.get_u32("oid");
+            let name: String = row.get_string("nspname");
             schemas_map.insert(
                 name.clone(),
                 Schema {
@@ -49,9 +53,9 @@ impl<'a> PostgresScanner<'a> {
 
         let mut schemas_found = Vec::new();
         for row in table_rows {
-            let schema_name: String = row.get("table_schema");
-            let table_name: String = row.get("table_name");
-            let oid: u32 = row.get("oid");
+            let schema_name: String = row.get_string("table_schema");
+            let table_name: String = row.get_string("table_name");
+            let oid: u32 = row.get_u32("oid");
             schemas_found.push((schema_name, table_name, oid));
         }
 
@@ -72,19 +76,31 @@ impl<'a> PostgresScanner<'a> {
             );
 
             let columns = col_res.unwrap_or_else(|e| {
-                warn!("error scanning columns for {}.{}: {:?}", schema_name, table_name, e);
+                warn!(
+                    "error scanning columns for {}.{}: {:?}",
+                    schema_name, table_name, e
+                );
                 vec![]
             });
             let constraints = con_res.unwrap_or_else(|e| {
-                warn!("error scanning constraints for {}.{}: {:?}", schema_name, table_name, e);
+                warn!(
+                    "error scanning constraints for {}.{}: {:?}",
+                    schema_name, table_name, e
+                );
                 vec![]
             });
             let indexes = idx_res.unwrap_or_else(|e| {
-                warn!("error scanning indexes for {}.{}: {:?}", schema_name, table_name, e);
+                warn!(
+                    "error scanning indexes for {}.{}: {:?}",
+                    schema_name, table_name, e
+                );
                 vec![]
             });
             let triggers = trig_res.unwrap_or_else(|e| {
-                warn!("error scanning triggers for {}.{}: {:?}", schema_name, table_name, e);
+                warn!(
+                    "error scanning triggers for {}.{}: {:?}",
+                    schema_name, table_name, e
+                );
                 vec![]
             });
 
@@ -112,11 +128,11 @@ impl<'a> PostgresScanner<'a> {
         match self.client.query(views_query, &[]).await {
             Ok(view_rows) => {
                 for row in view_rows {
-                    let schema_name: String = row.get("table_schema");
-                    let view_name: String = row.get("table_name");
-                    let definition: Option<String> = row.get("view_definition");
-                    let is_updatable_str: String = row.get("is_updatable");
-                    let oid: u32 = row.get("oid");
+                    let schema_name: String = row.get_string("table_schema");
+                    let view_name: String = row.get_string("table_name");
+                    let definition: Option<String> = row.get_opt_string("view_definition");
+                    let is_updatable_str: String = row.get_string("is_updatable");
+                    let oid: u32 = row.get_u32("oid");
 
                     let schema = schemas_map
                         .entry(schema_name.clone())
@@ -165,7 +181,7 @@ impl<'a> PostgresScanner<'a> {
         &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Column>, Error> {
+    ) -> Result<Vec<Column>, String> {
         let columns_query = "
             SELECT column_name, data_type, is_nullable, column_default, character_maximum_length
             FROM information_schema.columns
@@ -180,11 +196,11 @@ impl<'a> PostgresScanner<'a> {
         let mut columns = Vec::new();
 
         for col_row in col_rows {
-            let col_name: String = col_row.get("column_name");
-            let data_type_str: String = col_row.get("data_type");
-            let is_nullable_str: String = col_row.get("is_nullable");
-            let column_default: Option<String> = col_row.get("column_default");
-            let char_len: Option<i32> = col_row.get("character_maximum_length");
+            let col_name: String = col_row.get_string("column_name");
+            let data_type_str: String = col_row.get_string("data_type");
+            let is_nullable_str: String = col_row.get_string("is_nullable");
+            let column_default: Option<String> = col_row.get_opt_string("column_default");
+            let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
 
             let data_type = map_data_type(data_type_str.as_ref(), char_len);
 
@@ -204,7 +220,7 @@ impl<'a> PostgresScanner<'a> {
         &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Constraint>, Error> {
+    ) -> Result<Vec<Constraint>, String> {
         let mut constraints = Vec::new();
 
         let constraints_query = "
@@ -250,14 +266,14 @@ impl<'a> PostgresScanner<'a> {
         let mut constraint_map: HashMap<String, ConstraintGroup> = HashMap::new();
 
         for row in rows {
-            let name: String = row.get("constraint_name");
-            let ctype: String = row.get("constraint_type");
-            let local_col: String = row.get("local_column");
-            let foreign_schema: Option<String> = row.get("foreign_schema");
-            let foreign_table: Option<String> = row.get("foreign_table");
-            let foreign_col: Option<String> = row.get("foreign_column");
-            let update_rule: Option<String> = row.get("update_rule");
-            let delete_rule: Option<String> = row.get("delete_rule");
+            let name: String = row.get_string("constraint_name");
+            let ctype: String = row.get_string("constraint_type");
+            let local_col: String = row.get_string("local_column");
+            let foreign_schema: Option<String> = row.get_opt_string("foreign_schema");
+            let foreign_table: Option<String> = row.get_opt_string("foreign_table");
+            let foreign_col: Option<String> = row.get_opt_string("foreign_column");
+            let update_rule: Option<String> = row.get_opt_string("update_rule");
+            let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
                 .entry(name.clone())
@@ -316,9 +332,9 @@ impl<'a> PostgresScanner<'a> {
             .query(check_query, &[&schema_name, &table_name])
             .await?
         {
-            let name: String = row.get("constraint_name");
-            let clause: String = row.get("check_clause");
-            let column: Option<String> = row.get("column_name");
+            let name: String = row.get_string("constraint_name");
+            let clause: String = row.get_string("check_clause");
+            let column: Option<String> = row.get_opt_string("column_name");
 
             let entry = check_map.entry(name).or_insert((clause, Vec::new()));
             if let Some(col) = column {
@@ -337,7 +353,11 @@ impl<'a> PostgresScanner<'a> {
         Ok(constraints)
     }
 
-    async fn scan_indexes(&self, schema_name: &str, table_name: &str) -> Result<Vec<Index>, Error> {
+    async fn scan_indexes(
+        &self,
+        schema_name: &str,
+        table_name: &str,
+    ) -> Result<Vec<Index>, String> {
         let mut indexes = Vec::new();
 
         let index_query = "
@@ -373,13 +393,13 @@ impl<'a> PostgresScanner<'a> {
             .await?;
 
         for row in rows {
-            let name: String = row.get("index_name");
-            let index_type: String = row.get("index_type");
-            let is_unique: bool = row.get("is_unique");
-            let is_primary: bool = row.get("is_primary");
-            let definition: String = row.get("index_definition");
-            let partial_condition: Option<String> = row.get("partial_condition");
-            let columns: Vec<String> = row.get("index_columns");
+            let name: String = row.get_string("index_name");
+            let index_type: String = row.get_string("index_type");
+            let is_unique: bool = row.get_bool("is_unique");
+            let is_primary: bool = row.get_bool("is_primary");
+            let definition: String = row.get_string("index_definition");
+            let partial_condition: Option<String> = row.get_opt_string("partial_condition");
+            let columns: Vec<String> = row.get_vec_string("index_columns");
 
             indexes.push(Index {
                 name,
@@ -399,7 +419,7 @@ impl<'a> PostgresScanner<'a> {
         &self,
         schema_name: &str,
         table_name: &str,
-    ) -> Result<Vec<Trigger>, Error> {
+    ) -> Result<Vec<Trigger>, String> {
         let trigger_query = "
             SELECT
                 trigger_name,
@@ -419,18 +439,18 @@ impl<'a> PostgresScanner<'a> {
 
         for row in rows {
             triggers.push(Trigger {
-                name: row.get("trigger_name"),
-                event_manipulation: row.get("event_manipulation"),
-                action_statement: row.get("action_statement"),
-                action_timing: row.get("action_timing"),
-                action_condition: row.get("action_condition"),
+                name: row.get_string("trigger_name"),
+                event_manipulation: row.get_string("event_manipulation"),
+                action_statement: row.get_string("action_statement"),
+                action_timing: row.get_string("action_timing"),
+                action_condition: row.get_opt_string("action_condition"),
             });
         }
 
         Ok(triggers)
     }
 
-    async fn scan_enums(&self, schemas_map: &mut HashMap<String, Schema>) -> Result<(), Error> {
+    async fn scan_enums(&self, schemas_map: &mut HashMap<String, Schema>) -> Result<(), String> {
         let enum_query = "
             SELECT
                 n.nspname AS schema_name,
@@ -452,10 +472,10 @@ impl<'a> PostgresScanner<'a> {
         let rows = self.client.query(enum_query, &[]).await?;
 
         for row in rows {
-            let schema_name: String = row.get("schema_name");
-            let enum_name: String = row.get("enum_name");
-            let variants: Vec<String> = row.get("variants");
-            let oid: u32 = row.get("enum_oid");
+            let schema_name: String = row.get_string("schema_name");
+            let enum_name: String = row.get_string("enum_name");
+            let variants: Vec<String> = row.get_vec_string("variants");
+            let oid: u32 = row.get_u32("enum_oid");
 
             let schema = schemas_map
                 .entry(schema_name.clone())
@@ -475,7 +495,10 @@ impl<'a> PostgresScanner<'a> {
         Ok(())
     }
 
-    async fn scan_sequences(&self, schemas_map: &mut HashMap<String, Schema>) -> Result<(), Error> {
+    async fn scan_sequences(
+        &self,
+        schemas_map: &mut HashMap<String, Schema>,
+    ) -> Result<(), String> {
         let seq_query = "
             SELECT
                 sequence_schema,
@@ -497,14 +520,14 @@ impl<'a> PostgresScanner<'a> {
         let rows = self.client.query(seq_query, &[]).await?;
 
         for row in rows {
-            let schema_name: String = row.get("sequence_schema");
-            let name: String = row.get("sequence_name");
-            let start_value: i64 = row.get("start_value");
-            let increment: i64 = row.get("increment");
-            let min_value: i64 = row.get("minimum_value");
-            let max_value: i64 = row.get("maximum_value");
-            let cycle_option: String = row.get("cycle_option");
-            let oid: u32 = row.get("oid");
+            let schema_name: String = row.get_string("sequence_schema");
+            let name: String = row.get_string("sequence_name");
+            let start_value: i64 = row.get_i64("start_value");
+            let increment: i64 = row.get_i64("increment");
+            let min_value: i64 = row.get_i64("minimum_value");
+            let max_value: i64 = row.get_i64("maximum_value");
+            let cycle_option: String = row.get_string("cycle_option");
+            let oid: u32 = row.get_u32("oid");
 
             let schema = schemas_map
                 .entry(schema_name.clone())
@@ -528,7 +551,10 @@ impl<'a> PostgresScanner<'a> {
         Ok(())
     }
 
-    async fn scan_functions(&self, schemas_map: &mut HashMap<String, Schema>) -> Result<(), Error> {
+    async fn scan_functions(
+        &self,
+        schemas_map: &mut HashMap<String, Schema>,
+    ) -> Result<(), String> {
         let routine_query = "
             SELECT
                 routine_schema,
@@ -545,13 +571,13 @@ impl<'a> PostgresScanner<'a> {
         let rows = self.client.query(routine_query, &[]).await?;
 
         for row in rows {
-            let schema_name: Option<String> = row.try_get("routine_schema").ok();
-            let routine_name: Option<String> = row.try_get("routine_name").ok();
-            let routine_type: Option<String> = row.try_get("routine_type").ok();
-            let return_type: Option<String> = row.try_get("return_type").ok();
-            let definition: Option<String> = row.try_get("routine_definition").ok();
-            let language: Option<String> = row.try_get("external_language").ok();
-            let oid: Option<u32> = row.try_get("oid").ok();
+            let schema_name: Option<String> = row.try_get_string("routine_schema").ok();
+            let routine_name: Option<String> = row.try_get_string("routine_name").ok();
+            let routine_type: Option<String> = row.try_get_string("routine_type").ok();
+            let return_type: Option<String> = row.try_get_string("return_type").ok();
+            let definition: Option<String> = row.try_get_string("routine_definition").ok();
+            let language: Option<String> = row.try_get_string("external_language").ok();
+            let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
                 let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
@@ -572,7 +598,10 @@ impl<'a> PostgresScanner<'a> {
                 ";
 
                 let param_rows = self.client.query(param_query, &[&s_name, &r_name]).await?;
-                let argument_types = param_rows.iter().map(|r| r.get("data_type")).collect();
+                let argument_types = param_rows
+                    .iter()
+                    .map(|r| r.get_string("data_type"))
+                    .collect();
 
                 schema.functions.push(Function {
                     oid: oid.unwrap_or(0),
@@ -629,5 +658,362 @@ fn map_referential_action(action: &str) -> ReferentialAction {
         "SET DEFAULT" => ReferentialAction::SetDefault,
         "RESTRICT" => ReferentialAction::Restrict,
         _ => ReferentialAction::NoAction,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::scanner::mock::mock_client::MockClient;
+    use serde_json::json;
+
+    #[tokio::test]
+    async fn test_mock_scanner() {
+        let mut mock = MockClient::new();
+
+        mock.add_response(
+            "SELECT oid, nspname",
+            json!([
+                { "oid": 1000, "nspname": "public" }
+            ]),
+        );
+
+        mock.add_response(
+            "information_schema.tables",
+            json!([
+                { "table_schema": "public", "table_name": "users", "oid": 2000 }
+            ]),
+        );
+
+        mock.add_response(
+            "information_schema.columns",
+            json!([
+                {
+                    "column_name": "id",
+                    "data_type": "uuid",
+                    "is_nullable": "NO",
+                    "column_default": null,
+                    "character_maximum_length": null
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let database = scanner.scan("test_db").await.expect("scan failed");
+
+        assert_eq!(database.schemas.len(), 1);
+        assert_eq!(database.schemas[0].name, "public");
+        assert_eq!(database.schemas[0].tables.len(), 1);
+        assert_eq!(database.schemas[0].tables[0].name, "users");
+        assert_eq!(database.schemas[0].tables[0].columns.len(), 1);
+        assert_eq!(database.schemas[0].tables[0].columns[0].name, "id");
+    }
+
+    #[tokio::test]
+    async fn test_scan_columns() {
+        let mut mock = MockClient::new();
+        mock.add_response(
+            "information_schema.columns",
+            json!([
+                {
+                    "column_name": "id",
+                    "data_type": "uuid",
+                    "is_nullable": "NO",
+                    "column_default": null,
+                    "character_maximum_length": null
+                },
+                {
+                    "column_name": "name",
+                    "data_type": "character varying",
+                    "is_nullable": "YES",
+                    "column_default": "'default_name'",
+                    "character_maximum_length": 255
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let columns = scanner
+            .scan_columns("public", "users")
+            .await
+            .expect("scan_columns failed");
+
+        assert_eq!(columns.len(), 2);
+
+        let id_col = &columns[0];
+        assert_eq!(id_col.name, "id");
+        assert!(matches!(id_col.data_type, PostgresDataType::Uuid));
+        assert!(!id_col.is_nullable);
+        assert_eq!(id_col.default_value, None);
+
+        let name_col = &columns[1];
+        assert_eq!(name_col.name, "name");
+        assert!(matches!(
+            name_col.data_type,
+            PostgresDataType::Varchar { length: Some(255) }
+        ));
+        assert!(name_col.is_nullable);
+        assert_eq!(name_col.default_value, Some("'default_name'".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_scan_constraints() {
+        let mut mock = MockClient::new();
+
+        mock.add_response(
+            "ccu.table_schema AS foreign_schema",
+            json!([
+                {
+                    "constraint_name": "users_pkey",
+                    "constraint_type": "PRIMARY KEY",
+                    "update_rule": null,
+                    "delete_rule": null,
+                    "foreign_schema": null,
+                    "foreign_table": null,
+                    "foreign_column": null,
+                    "local_column": "id"
+                },
+                {
+                    "constraint_name": "fk_role",
+                    "constraint_type": "FOREIGN KEY",
+                    "update_rule": "NO ACTION",
+                    "delete_rule": "CASCADE",
+                    "foreign_schema": "public",
+                    "foreign_table": "roles",
+                    "foreign_column": "role_id",
+                    "local_column": "role_id"
+                }
+            ]),
+        );
+
+        mock.add_response(
+            "information_schema.check_constraints",
+            json!([
+                {
+                    "constraint_name": "age_check",
+                    "check_clause": "age > 18",
+                    "column_name": "age"
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let constraints = scanner
+            .scan_constraints("public", "users")
+            .await
+            .expect("scan_constraints failed");
+
+        assert_eq!(constraints.len(), 3);
+
+        let pkey = constraints.iter().find(|c| c.name == "users_pkey").unwrap();
+        assert_eq!(pkey.columns, vec!["id"]);
+        assert!(matches!(pkey.constraint_type, ConstraintType::PrimaryKey));
+
+        let fkey = constraints.iter().find(|c| c.name == "fk_role").unwrap();
+        assert_eq!(fkey.columns, vec!["role_id"]);
+        if let ConstraintType::ForeignKey {
+            foreign_schema,
+            foreign_table,
+            foreign_columns,
+            on_delete,
+            ..
+        } = &fkey.constraint_type
+        {
+            assert_eq!(foreign_schema, "public");
+            assert_eq!(foreign_table, "roles");
+            assert_eq!(foreign_columns, &vec!["role_id"]);
+            assert!(matches!(on_delete, ReferentialAction::Cascade));
+        } else {
+            panic!("Expected ForeignKey");
+        }
+
+        let check = constraints.iter().find(|c| c.name == "age_check").unwrap();
+        assert_eq!(check.columns, vec!["age"]);
+        if let ConstraintType::Check(clause) = &check.constraint_type {
+            assert_eq!(clause, "age > 18");
+        } else {
+            panic!("Expected Check constraint");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_scan_indexes() {
+        let mut mock = MockClient::new();
+        mock.add_response(
+            "pg_index AS idx",
+            json!([
+                {
+                    "index_name": "idx_users_email",
+                    "index_type": "btree",
+                    "is_unique": true,
+                    "is_primary": false,
+                    "index_definition": "CREATE UNIQUE INDEX idx_users_email ON public.users USING btree (email)",
+                    "partial_condition": null,
+                    "index_columns": ["email"]
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let indexes = scanner
+            .scan_indexes("public", "users")
+            .await
+            .expect("scan_indexes failed");
+
+        assert_eq!(indexes.len(), 1);
+        let idx = &indexes[0];
+        assert_eq!(idx.name, "idx_users_email");
+        assert_eq!(idx.index_type, "btree");
+        assert!(idx.is_unique);
+        assert!(!idx.is_primary_key);
+        assert_eq!(idx.columns, vec!["email"]);
+        assert_eq!(idx.partial_condition, None);
+    }
+
+    #[tokio::test]
+    async fn test_scan_triggers() {
+        let mut mock = MockClient::new();
+        mock.add_response(
+            "information_schema.triggers",
+            json!([
+                {
+                    "trigger_name": "update_updated_at",
+                    "event_manipulation": "UPDATE",
+                    "action_statement": "EXECUTE FUNCTION update_timestamp()",
+                    "action_timing": "BEFORE",
+                    "action_condition": null
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let triggers = scanner
+            .scan_triggers("public", "users")
+            .await
+            .expect("scan_triggers failed");
+
+        assert_eq!(triggers.len(), 1);
+        let tg = &triggers[0];
+        assert_eq!(tg.name, "update_updated_at");
+        assert_eq!(tg.event_manipulation, "UPDATE");
+        assert_eq!(tg.action_statement, "EXECUTE FUNCTION update_timestamp()");
+        assert_eq!(tg.action_timing, "BEFORE");
+    }
+
+    #[tokio::test]
+    async fn test_scan_enums() {
+        let mut mock = MockClient::new();
+        mock.add_response(
+            "pg_enum e",
+            json!([
+                {
+                    "schema_name": "public",
+                    "enum_name": "user_status",
+                    "enum_oid": 3000,
+                    "variants": ["active", "inactive", "banned"]
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let mut schemas_map = std::collections::HashMap::new();
+        scanner
+            .scan_enums(&mut schemas_map)
+            .await
+            .expect("scan_enums failed");
+
+        assert_eq!(schemas_map.len(), 1);
+        let schema = schemas_map.get("public").unwrap();
+        assert_eq!(schema.enums.len(), 1);
+
+        let e = &schema.enums[0];
+        assert_eq!(e.name, "user_status");
+        assert_eq!(e.oid, 3000);
+        assert_eq!(e.variants, vec!["active", "inactive", "banned"]);
+    }
+
+    #[tokio::test]
+    async fn test_scan_sequences() {
+        let mut mock = MockClient::new();
+        mock.add_response(
+            "information_schema.sequences",
+            json!([
+                {
+                    "sequence_schema": "public",
+                    "sequence_name": "users_id_seq",
+                    "start_value": 1,
+                    "increment": 1,
+                    "minimum_value": 1,
+                    "maximum_value": 9223372036854775807_i64,
+                    "cycle_option": "NO",
+                    "oid": 4000
+                }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let mut schemas_map = std::collections::HashMap::new();
+        scanner
+            .scan_sequences(&mut schemas_map)
+            .await
+            .expect("scan_sequences failed");
+
+        assert_eq!(schemas_map.len(), 1);
+        let schema = schemas_map.get("public").unwrap();
+        assert_eq!(schema.sequences.len(), 1);
+
+        let seq = &schema.sequences[0];
+        assert_eq!(seq.name, "users_id_seq");
+        assert_eq!(seq.start_value, 1);
+        assert_eq!(seq.increment_by, 1);
+        assert_eq!(seq.min_value, 1);
+        assert_eq!(seq.max_value, 9223372036854775807);
+        assert!(!seq.cycle);
+    }
+
+    #[tokio::test]
+    async fn test_scan_functions() {
+        let mut mock = MockClient::new();
+
+        mock.add_response(
+            "WHERE routine_schema NOT IN",
+            json!([
+                {
+                    "routine_schema": "public",
+                    "routine_name": "calculate_tax",
+                    "routine_type": "FUNCTION",
+                    "return_type": "numeric",
+                    "routine_definition": "BEGIN RETURN amount * 0.2; END;",
+                    "external_language": "plpgsql",
+                    "oid": 5000
+                }
+            ]),
+        );
+
+        mock.add_response(
+            "information_schema.parameters",
+            json!([
+                { "data_type": "numeric" }
+            ]),
+        );
+
+        let scanner = PostgresScanner::new(&mock);
+        let mut schemas_map = std::collections::HashMap::new();
+        scanner
+            .scan_functions(&mut schemas_map)
+            .await
+            .expect("scan_functions failed");
+
+        assert_eq!(schemas_map.len(), 1);
+        let schema = schemas_map.get("public").unwrap();
+        assert_eq!(schema.functions.len(), 1);
+
+        let func = &schema.functions[0];
+        assert_eq!(func.name, "calculate_tax");
+        assert_eq!(func.oid, 5000);
+        assert_eq!(func.return_type, "numeric");
+        assert_eq!(func.argument_types, vec!["numeric"]);
+        assert_eq!(func.language, "plpgsql");
+        assert!(!func.is_procedure);
     }
 }
