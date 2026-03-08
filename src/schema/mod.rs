@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, utoipa::ToSchema)]
+#[schema(no_recursion)]
 pub enum PostgresDataType {
     Boolean,
     SmallInt,
@@ -28,7 +29,7 @@ pub enum PostgresDataType {
     Custom(String), // for user-defined types or enums
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub enum ReferentialAction {
     NoAction,
     Restrict,
@@ -37,7 +38,7 @@ pub enum ReferentialAction {
     SetDefault,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub enum ConstraintType {
     PrimaryKey,
     Unique,
@@ -50,7 +51,7 @@ pub enum ConstraintType {
     },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Column {
     pub name: String,
     pub data_type: PostgresDataType,
@@ -59,7 +60,7 @@ pub struct Column {
     pub comment: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Index {
     pub name: String,
     pub is_unique: bool,
@@ -70,14 +71,14 @@ pub struct Index {
     pub definition: String,                // Full SQL definition from using pg_get_indexdef
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Constraint {
     pub name: String,
     pub columns: Vec<String>, // local columns affected by the constraint
     pub constraint_type: ConstraintType,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Trigger {
     pub name: String,
     pub event_manipulation: String, // can be INSERT, UPDATE, DELETE
@@ -86,7 +87,7 @@ pub struct Trigger {
     pub action_condition: Option<String>, // the WHEN clause
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Table {
     pub name: String,
     pub schema_name: String,
@@ -122,7 +123,7 @@ impl Table {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct View {
     pub name: String,
     pub schema_name: String,
@@ -130,14 +131,14 @@ pub struct View {
     pub is_updatable: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct EnumType {
     pub name: String,
     pub schema_name: String,
     pub variants: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Sequence {
     pub name: String,
     pub schema_name: String,
@@ -148,7 +149,7 @@ pub struct Sequence {
     pub cycle: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Function {
     pub name: String,
     pub schema_name: String,
@@ -159,7 +160,7 @@ pub struct Function {
     pub is_procedure: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Schema {
     pub name: String,
     pub tables: Vec<Table>,
@@ -169,7 +170,7 @@ pub struct Schema {
     pub sequences: Vec<Sequence>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct Database {
     pub name: String,
     pub schemas: HashMap<String, Schema>,
