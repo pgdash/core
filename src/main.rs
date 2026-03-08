@@ -9,7 +9,6 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 #[derive(Deserialize)]
 struct ScanRequest {
     db_url: String,
-    db_name: String,
 }
 
 #[tokio::main]
@@ -25,7 +24,7 @@ async fn main() {
         .route("/health", axum::routing::get(health_check))
         .route("/scan", post(scan_database));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 5000));
     info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -38,6 +37,23 @@ async fn health_check() -> &'static str {
 async fn scan_database(
     Json(payload): Json<ScanRequest>,
 ) -> Result<Json<pgdash_lib::schema::Database>, (axum::http::StatusCode, String)> {
+    let parsed = url::Url::parse(&payload.db_url).map_err(|e| {
+        error!("Invalid db_url: {}", e);
+        (
+            axum::http::StatusCode::BAD_REQUEST,
+            format!("Invalid db_url: {}", e),
+        )
+    })?;
+
+    let db_name = parsed.path().trim_start_matches('/').to_string();
+
+    if db_name.is_empty() {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "db_url must include a database name in the path".to_string(),
+        ));
+    }
+
     let (client, connection) = tokio_postgres::connect(&payload.db_url, NoTls)
         .await
         .map_err(|e| {
@@ -56,7 +72,8 @@ async fn scan_database(
 
     let scanner = PostgresScanner::new(&client);
 
-    match scanner.scan(&payload.db_name).await {
+    info!("Scanning database: {}", db_name);
+    match scanner.scan(&db_name).await {
         Ok(database) => Ok(Json(database)),
         Err(e) => {
             error!("Scanner error: {}", e);
