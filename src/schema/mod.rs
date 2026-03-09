@@ -98,6 +98,7 @@ pub struct Table {
 }
 
 impl Table {
+    #[must_use]
     pub fn get_primary_key_columns(&self) -> Vec<&Column> {
         // Zero-cost abstraction: Collect references rather than cloning Strings into a new Vec
         let pk_columns: Vec<&String> = self
@@ -113,6 +114,7 @@ impl Table {
             .collect()
     }
 
+    #[must_use]
     pub fn is_foreign_key(&self, column_name: &str) -> bool {
         self.constraints.iter().any(|c| {
             matches!(c.constraint_type, ConstraintType::ForeignKey { .. })

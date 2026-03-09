@@ -54,7 +54,7 @@ async fn scan_database(
         error!("Failed to get connection from pool: {}", e);
         (
             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Database connection error: {}", e),
+            format!("Database connection error: {e}"),
         )
     })?;
 
@@ -67,7 +67,7 @@ async fn scan_database(
             error!("Scanner error: {}", e);
             Err((
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to scan database: {}", e),
+                format!("Failed to scan database: {e}"),
             ))
         }
     }
