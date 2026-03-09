@@ -526,7 +526,9 @@ fn map_data_type(dt: &str, char_len: Option<i32>) -> PostgresDataType {
         "real" => PostgresDataType::Real,
         "double precision" => PostgresDataType::DoublePrecision,
         "text" => PostgresDataType::Text,
-        "character varying" => PostgresDataType::Varchar(char_len.map(|l| u32::try_from(l).unwrap_or(0))),
+        "character varying" => {
+            PostgresDataType::Varchar(char_len.map(|l| u32::try_from(l).unwrap_or(0)))
+        }
         "character" => PostgresDataType::Character(char_len.map(|l| u32::try_from(l).unwrap_or(0))),
         "timestamp without time zone" => PostgresDataType::Timestamp(false),
         "timestamp with time zone" => PostgresDataType::Timestamp(true),
