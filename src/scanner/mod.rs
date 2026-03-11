@@ -172,8 +172,15 @@ impl<'a> PostgresScanner<'a> {
             .query(constraints_query, &[&schema_name, &table_name])
             .await?;
 
+        enum ConstraintGroupType {
+            PrimaryKey,
+            Unique,
+            ForeignKey,
+            Other,
+        }
+
         struct ConstraintGroup {
-            ctype: String,
+            ctype: ConstraintGroupType,
             local_cols: Vec<String>,
             foreign_table: Option<String>,
             update_action: Option<ReferentialAction>,
@@ -185,7 +192,13 @@ impl<'a> PostgresScanner<'a> {
 
         for row in rows {
             let name: String = row.get("constraint_name");
-            let ctype: String = row.get("constraint_type");
+            let ctype_str: &str = row.get("constraint_type");
+            let ctype = match ctype_str {
+                "PRIMARY KEY" => ConstraintGroupType::PrimaryKey,
+                "UNIQUE" => ConstraintGroupType::Unique,
+                "FOREIGN KEY" => ConstraintGroupType::ForeignKey,
+                _ => ConstraintGroupType::Other,
+            };
             let local_col: String = row.get("local_column");
             let foreign_table: Option<String> = row.get("foreign_table");
             let foreign_col: Option<String> = row.get("foreign_column");
@@ -193,7 +206,7 @@ impl<'a> PostgresScanner<'a> {
             let delete_rule: Option<&str> = row.get("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
+                .entry(name)
                 .or_insert_with(|| ConstraintGroup {
                     ctype,
                     local_cols: Vec::new(),
@@ -210,16 +223,16 @@ impl<'a> PostgresScanner<'a> {
         }
 
         for (name, group) in constraint_map {
-            let constraint_type = match group.ctype.as_str() {
-                "PRIMARY KEY" => ConstraintType::PrimaryKey,
-                "UNIQUE" => ConstraintType::Unique,
-                "FOREIGN KEY" => ConstraintType::ForeignKey {
+            let constraint_type = match group.ctype {
+                ConstraintGroupType::PrimaryKey => ConstraintType::PrimaryKey,
+                ConstraintGroupType::Unique => ConstraintType::Unique,
+                ConstraintGroupType::ForeignKey => ConstraintType::ForeignKey {
                     foreign_table: group.foreign_table.unwrap_or_default(),
                     foreign_columns: group.foreign_cols,
                     on_delete: group.delete_action.unwrap_or(ReferentialAction::NoAction),
                     on_update: group.update_action.unwrap_or(ReferentialAction::NoAction),
                 },
-                _ => continue,
+                ConstraintGroupType::Other => continue,
             };
 
             constraints.push(Constraint {
