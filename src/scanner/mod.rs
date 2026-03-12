@@ -14,6 +14,20 @@ impl<'a> PostgresScanner<'a> {
         Self { client }
     }
 
+    fn get_or_create_schema<'b>(database: &'b mut Database, schema_name: &str) -> &'b mut Schema {
+        if !database.schemas.contains_key(schema_name) {
+            let name = schema_name.to_string();
+            database.schemas.insert(
+                name.clone(),
+                Schema {
+                    name,
+                    ..Default::default()
+                },
+            );
+        }
+        database.schemas.get_mut(schema_name).unwrap()
+    }
+
     pub async fn scan(&self, database_name: &str) -> Result<Database, Error> {
         let mut database = Database {
             name: database_name.to_string(),
@@ -38,13 +52,7 @@ impl<'a> PostgresScanner<'a> {
         }
 
         for (schema_name, table_name) in schemas_found {
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            let schema = Self::get_or_create_schema(&mut database, &schema_name);
 
             let columns = self.scan_columns(&schema_name, &table_name).await?;
             let constraints = self.scan_constraints(&schema_name, &table_name).await?;
@@ -74,17 +82,11 @@ impl<'a> PostgresScanner<'a> {
             let definition: Option<String> = row.get("view_definition");
             let is_updatable_str: &str = row.get("is_updatable");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            let schema = Self::get_or_create_schema(&mut database, &schema_name);
 
             schema.views.push(View {
                 name: view_name,
-                schema_name: schema_name.clone(),
+                schema_name,
                 definition: definition.unwrap_or_default(),
                 is_updatable: is_updatable_str == "YES",
             });
@@ -193,7 +195,7 @@ impl<'a> PostgresScanner<'a> {
             let delete_rule: Option<&str> = row.get("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
+                .entry(name)
                 .or_insert_with(|| ConstraintGroup {
                     ctype,
                     local_cols: Vec::new(),
@@ -386,13 +388,7 @@ impl<'a> PostgresScanner<'a> {
             let enum_name: String = row.get("enum_name");
             let variants: Vec<String> = row.get("variants");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            let schema = Self::get_or_create_schema(database, &schema_name);
 
             schema.enums.push(EnumType {
                 name: enum_name,
@@ -431,13 +427,7 @@ impl<'a> PostgresScanner<'a> {
             let max_value: i64 = row.get("maximum_value");
             let cycle_option: &str = row.get("cycle_option");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            let schema = Self::get_or_create_schema(database, &schema_name);
 
             schema.sequences.push(crate::schema::Sequence {
                 name,
@@ -477,13 +467,7 @@ impl<'a> PostgresScanner<'a> {
             let language: Option<String> = row.try_get("external_language").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = database
-                    .schemas
-                    .entry(s_name.clone())
-                    .or_insert_with(|| Schema {
-                        name: s_name.clone(),
-                        ..Default::default()
-                    });
+                let schema = Self::get_or_create_schema(database, &s_name);
 
                 let param_query = "
                     SELECT data_type
