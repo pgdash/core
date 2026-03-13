@@ -69,22 +69,25 @@ impl<'a> PostgresScanner<'a> {
         ";
 
         for row in self.client.query(views_query, &[]).await? {
-            let schema_name: String = row.get("table_schema");
+            let schema_name: &str = row.get("table_schema");
             let view_name: String = row.get("table_name");
             let definition: Option<String> = row.get("view_definition");
             let is_updatable_str: &str = row.get("is_updatable");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            if !database.schemas.contains_key(schema_name) {
+                database.schemas.insert(
+                    schema_name.to_string(),
+                    Schema {
+                        name: schema_name.to_string(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = database.schemas.get_mut(schema_name).unwrap();
 
             schema.views.push(View {
                 name: view_name,
-                schema_name: schema_name.clone(),
+                schema_name: schema_name.to_string(),
                 definition: definition.unwrap_or_default(),
                 is_updatable: is_updatable_str == "YES",
             });
@@ -382,21 +385,24 @@ impl<'a> PostgresScanner<'a> {
         let rows = self.client.query(enum_query, &[]).await?;
 
         for row in rows {
-            let schema_name: String = row.get("schema_name");
+            let schema_name: &str = row.get("schema_name");
             let enum_name: String = row.get("enum_name");
             let variants: Vec<String> = row.get("variants");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            if !database.schemas.contains_key(schema_name) {
+                database.schemas.insert(
+                    schema_name.to_string(),
+                    Schema {
+                        name: schema_name.to_string(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = database.schemas.get_mut(schema_name).unwrap();
 
             schema.enums.push(EnumType {
                 name: enum_name,
-                schema_name,
+                schema_name: schema_name.to_string(),
                 variants,
             });
         }
@@ -423,7 +429,7 @@ impl<'a> PostgresScanner<'a> {
         let rows = self.client.query(seq_query, &[]).await?;
 
         for row in rows {
-            let schema_name: String = row.get("sequence_schema");
+            let schema_name: &str = row.get("sequence_schema");
             let name: String = row.get("sequence_name");
             let start_value: i64 = row.get("start_value");
             let increment: i64 = row.get("increment");
@@ -431,17 +437,20 @@ impl<'a> PostgresScanner<'a> {
             let max_value: i64 = row.get("maximum_value");
             let cycle_option: &str = row.get("cycle_option");
 
-            let schema = database
-                .schemas
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            if !database.schemas.contains_key(schema_name) {
+                database.schemas.insert(
+                    schema_name.to_string(),
+                    Schema {
+                        name: schema_name.to_string(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = database.schemas.get_mut(schema_name).unwrap();
 
             schema.sequences.push(crate::schema::Sequence {
                 name,
-                schema_name,
+                schema_name: schema_name.to_string(),
                 start_value,
                 increment_by: increment,
                 min_value,
@@ -477,13 +486,16 @@ impl<'a> PostgresScanner<'a> {
             let language: Option<String> = row.try_get("external_language").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = database
-                    .schemas
-                    .entry(s_name.clone())
-                    .or_insert_with(|| Schema {
-                        name: s_name.clone(),
-                        ..Default::default()
-                    });
+                if !database.schemas.contains_key(&s_name) {
+                    database.schemas.insert(
+                        s_name.clone(),
+                        Schema {
+                            name: s_name.clone(),
+                            ..Default::default()
+                        },
+                    );
+                }
+                let schema = database.schemas.get_mut(&s_name).unwrap();
 
                 let param_query = "
                     SELECT data_type
@@ -507,7 +519,7 @@ impl<'a> PostgresScanner<'a> {
                     return_type: return_type.unwrap_or_else(|| "void".to_string()),
                     definition: definition.unwrap_or_default(),
                     language: language.unwrap_or_else(|| "sql".to_string()),
-                    is_procedure: routine_type.map(|t| t == "PROCEDURE").unwrap_or(false),
+                    is_procedure: routine_type.is_some_and(|t| t == "PROCEDURE"),
                 });
             }
         }
