@@ -202,7 +202,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let column_default: Option<String> = col_row.get_opt_string("column_default");
             let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
 
-            let data_type = map_data_type(data_type_str.as_ref(), char_len);
+            let data_type = map_data_type(&data_type_str, char_len);
 
             columns.push(Column {
                 name: col_name,
@@ -282,8 +282,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     local_cols: Vec::new(),
                     foreign_schema,
                     foreign_table,
-                    update_action: update_rule.map(|r| map_referential_action(&r)),
-                    delete_action: delete_rule.map(|r| map_referential_action(&r)),
+                    update_action: update_rule.map(map_referential_action),
+                    delete_action: delete_rule.map(map_referential_action),
                     foreign_cols: Vec::new(),
                 });
 
@@ -651,8 +651,8 @@ fn map_data_type(dt: &str, char_len: Option<i32>) -> PostgresDataType {
     }
 }
 
-fn map_referential_action(action: &str) -> ReferentialAction {
-    match action {
+fn map_referential_action(action: String) -> ReferentialAction {
+    match action.as_str() {
         "CASCADE" => ReferentialAction::Cascade,
         "SET NULL" => ReferentialAction::SetNull,
         "SET DEFAULT" => ReferentialAction::SetDefault,
