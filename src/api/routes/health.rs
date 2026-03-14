@@ -5,7 +5,8 @@ use utoipa_axum::{router::OpenApiRouter, routes};
     path = "/",
     responses(
         (status = 200, description = "Health check", body = String)
-    )
+    ),
+    tag="health"
 )]
 pub async fn health_check() -> &'static str {
     "OK"

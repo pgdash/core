@@ -12,7 +12,8 @@ use utoipa_axum::routes;
         (status = 200, description = "Database scan result", body = ScanResponse),
         (status = 400, description = "Invalid request or connection error", body = String),
         (status = 500, description = "Scanner error", body = String)
-    )
+    ),
+    tag="scan"
 )]
 pub async fn scan_database(
     Json(payload): Json<ScanRequest>,
