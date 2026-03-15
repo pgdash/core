@@ -13,6 +13,9 @@ pub trait DatabaseRow: Send + Sync {
     fn get_opt_bool(&self, name: &str) -> Option<bool>;
     fn get_vec_string(&self, name: &str) -> Vec<String>;
 
+    fn get_str(&self, name: &str) -> &str;
+    fn get_opt_str(&self, name: &str) -> Option<&str>;
+
     fn try_get_string(&self, name: &str) -> Result<String, String>;
     fn try_get_u32(&self, name: &str) -> Result<u32, String>;
 }
@@ -59,6 +62,13 @@ impl DatabaseRow for tokio_postgres::Row {
         self.get(name)
     }
     fn get_vec_string(&self, name: &str) -> Vec<String> {
+        self.get(name)
+    }
+
+    fn get_str(&self, name: &str) -> &str {
+        self.get(name)
+    }
+    fn get_opt_str(&self, name: &str) -> Option<&str> {
         self.get(name)
     }
 
