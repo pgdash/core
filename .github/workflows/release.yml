@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-and-release:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         run: cargo build --release --locked
 
       - name: Run Tests
-        run: cargo test --release --locked
+        run: cargo test --release --locked -- --test-threads=1
 
       - name: Package Binary
         run: |
