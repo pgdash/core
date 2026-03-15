@@ -131,7 +131,6 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     let schema_name: String = row.get_string("table_schema");
                     let view_name: String = row.get_string("table_name");
                     let definition: Option<String> = row.get_opt_string("view_definition");
-                    let is_updatable_str: String = row.get_string("is_updatable");
                     let oid: u32 = row.get_u32("oid");
 
                     let schema = schemas_map
@@ -146,7 +145,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                         name: view_name,
                         schema_name: schema_name.clone(),
                         definition: definition.unwrap_or_default(),
-                        is_updatable: is_updatable_str == "YES",
+                        is_updatable: row.get_str("is_updatable") == "YES",
                     });
                 }
             }
@@ -197,17 +196,15 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for col_row in col_rows {
             let col_name: String = col_row.get_string("column_name");
-            let data_type_str: String = col_row.get_string("data_type");
-            let is_nullable_str: String = col_row.get_string("is_nullable");
             let column_default: Option<String> = col_row.get_opt_string("column_default");
             let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
 
-            let data_type = map_data_type(&data_type_str, char_len);
+            let data_type = map_data_type(col_row.get_str("data_type"), char_len);
 
             columns.push(Column {
                 name: col_name,
                 data_type,
-                is_nullable: is_nullable_str == "YES",
+                is_nullable: col_row.get_str("is_nullable") == "YES",
                 default_value: column_default,
                 comment: None,
             });
@@ -272,8 +269,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let foreign_schema: Option<String> = row.get_opt_string("foreign_schema");
             let foreign_table: Option<String> = row.get_opt_string("foreign_table");
             let foreign_col: Option<String> = row.get_opt_string("foreign_column");
-            let update_rule: Option<String> = row.get_opt_string("update_rule");
-            let delete_rule: Option<String> = row.get_opt_string("delete_rule");
+            let update_rule: Option<&str> = row.get_opt_str("update_rule");
+            let delete_rule: Option<&str> = row.get_opt_str("delete_rule");
 
             let entry = constraint_map
                 .entry(name.clone())
@@ -526,7 +523,6 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let increment: i64 = row.get_i64("increment");
             let min_value: i64 = row.get_i64("minimum_value");
             let max_value: i64 = row.get_i64("maximum_value");
-            let cycle_option: String = row.get_string("cycle_option");
             let oid: u32 = row.get_u32("oid");
 
             let schema = schemas_map
@@ -544,7 +540,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 increment_by: increment,
                 min_value,
                 max_value,
-                cycle: cycle_option == "YES",
+                cycle: row.get_str("cycle_option") == "YES",
             });
         }
 
@@ -651,8 +647,8 @@ fn map_data_type(dt: &str, char_len: Option<i32>) -> PostgresDataType {
     }
 }
 
-fn map_referential_action(action: String) -> ReferentialAction {
-    match action.as_str() {
+fn map_referential_action(action: &str) -> ReferentialAction {
+    match action {
         "CASCADE" => ReferentialAction::Cascade,
         "SET NULL" => ReferentialAction::SetNull,
         "SET DEFAULT" => ReferentialAction::SetDefault,
