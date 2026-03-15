@@ -1,0 +1,10 @@
+server:
+  port: 5000
+  log_level: info
+
+database:
+  url: postgres://postgres:postgres@localhost/postgres
+
+admin:
+  username: admin
+  password: admin

@@ -21,7 +21,65 @@ Getting started is incredibly simple: All you have to do is provide your Postgre
 ### Building and Running
 * **Build**: `cargo build`
 * **Run**: `cargo run`
-* **Test**: `cargo test`
+* **Test**: `cargo test -- --test-threads=1`
+
+## Configuration
+
+`pgdash-core` can be configured using either a YAML config file, environment variables, or both. Environment variables take precedence over config file values.
+
+### Config File
+
+By default, the application looks for `config.yaml` in the current directory. You can specify a custom path using the `PGDASH_CONFIG` environment variable.
+
+Example `config.yaml`:
+
+```yaml
+server:
+  port: 5000
+  log_level: info
+
+database:
+  url: postgres://postgres:postgres@localhost/postgres
+
+admin:
+  username: admin
+  password: admin
+```
+
+### Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `server.port` | HTTP server port | `5000` |
+| `server.log_level` | Log level (trace, debug, info, warn, error) | `info` |
+| `database.url` | PostgreSQL connection URL | `postgres://postgres:postgres@localhost/postgres` |
+| `admin.username` | Default admin username | `admin` |
+| `admin.password` | Default admin password | `admin` |
+
+### Environment Variables
+
+All configuration options can be overridden via environment variables with the `PGDASH_` prefix:
+
+| Variable | Config Option |
+|----------|--------------|
+| `PGDASH_SERVER_PORT` | `server.port` |
+| `PGDASH_SERVER_LOG_LEVEL` | `server.log_level` |
+| `PGDASH_DATABASE_URL` | `database.url` |
+| `PGDASH_ADMIN_USERNAME` | `admin.username` |
+| `PGDASH_ADMIN_PASSWORD` | `admin.password` |
+| `PGDASH_CONFIG` | Path to config file (default: `config.yaml`) |
+
+### Examples
+
+Using only environment variables:
+```bash
+PGDASH_SERVER_PORT=3000 PGDASH_DATABASE_URL=postgres://user:pass@host/db cargo run
+```
+
+Using a custom config file:
+```bash
+PGDASH_CONFIG=/etc/pgdash/config.yaml cargo run
+```
 
 ## Features and Capabilities
 
