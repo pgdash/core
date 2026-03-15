@@ -28,7 +28,7 @@ jobs:
         run: cargo build --release --locked
 
       - name: Run Tests
-        run: cargo test --release --locked
+        run: cargo test --release --locked -- --test-threads=1
 
       - name: Package Binary
         run: |
