@@ -53,6 +53,14 @@ pub mod mock_client {
         fn get_opt_bool(&self, name: &str) -> Option<bool> {
             self.data.get(name).and_then(|v| v.as_bool())
         }
+        fn get_str<'a>(&'a self, name: &str) -> &'a str {
+            self.data.get(name).unwrap().as_str().unwrap()
+        }
+        fn get_opt_str<'a>(&'a self, name: &str) -> Option<&'a str> {
+            self.data
+                .get(name)
+                .and_then(|v| v.as_str())
+        }
         fn get_vec_string(&self, name: &str) -> Vec<String> {
             self.data
                 .get(name)

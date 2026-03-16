@@ -197,8 +197,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for col_row in col_rows {
             let col_name: String = col_row.get_string("column_name");
-            let data_type_str: String = col_row.get_string("data_type");
-            let is_nullable_str: String = col_row.get_string("is_nullable");
+            let data_type_str: &str = col_row.get_str("data_type");
+            let is_nullable_str: &str = col_row.get_str("is_nullable");
             let column_default: Option<String> = col_row.get_opt_string("column_default");
             let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
 
