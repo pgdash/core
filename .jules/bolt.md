@@ -13,3 +13,9 @@ These small changes can yield massive performance gains, especially inside loops
 
 ## Zero-Copy Deserialization with tokio-postgres
 The `tokio-postgres` library's `Row::get` and `Row::try_get` methods allow fetching `TEXT` or `VARCHAR` fields as borrowed string slices (`&str`). This is a zero-copy operation that avoids heap-allocating `String`s. By avoiding allocations for intermediate variables (like type definitions or flags in information_schema queries) that only need to be parsed or evaluated (e.g., checking `== "YES"` or mapping to an enum via `&str`), we can significantly speed up the schema scanning process and minimize heap allocations.
+
+### Zero-copy String references from DB Rows
+* **Date**: 2024-05-18
+* **Finding**: `tokio_postgres::Row` (and our `DatabaseRow` wrapper trait) allows returning transient `&str` references directly from the row buffer using `row.get(name)` when the expected type is `&str`.
+* **Impact**: We added `get_str` and `get_opt_str` to our trait. When scanning database schemas (like reading column types or nullability values), we can check and map these straight from the borrowed `&str` instead of heap-allocating `String` via `row.get_string(...)`.
+* **Why it matters**: A schema scan evaluates thousands of columns. Avoiding an owned `String` allocation for every `data_type` and `is_nullable` substantially reduces memory allocator pressure and churn, yielding faster zero-copy metadata parsing.
