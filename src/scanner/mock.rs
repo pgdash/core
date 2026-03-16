@@ -57,9 +57,7 @@ pub mod mock_client {
             self.data.get(name).unwrap().as_str().unwrap()
         }
         fn get_opt_str<'a>(&'a self, name: &str) -> Option<&'a str> {
-            self.data
-                .get(name)
-                .and_then(|v| v.as_str())
+            self.data.get(name).and_then(|v| v.as_str())
         }
         fn get_vec_string(&self, name: &str) -> Vec<String> {
             self.data
