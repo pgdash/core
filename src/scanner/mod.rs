@@ -202,7 +202,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let column_default: Option<String> = col_row.get_opt_string("column_default");
             let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
 
-            let data_type = map_data_type(&data_type_str, char_len);
+            let data_type = map_data_type(data_type_str, char_len);
 
             columns.push(Column {
                 name: col_name,
