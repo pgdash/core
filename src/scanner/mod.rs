@@ -131,7 +131,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     let schema_name: String = row.get_string("table_schema");
                     let view_name: String = row.get_string("table_name");
                     let definition: Option<String> = row.get_opt_string("view_definition");
-                    let is_updatable_str: String = row.get_string("is_updatable");
+                    let is_updatable = row.get_str("is_updatable") == "YES";
                     let oid: u32 = row.get_u32("oid");
 
                     let schema = schemas_map
@@ -146,7 +146,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                         name: view_name,
                         schema_name: schema_name.clone(),
                         definition: definition.unwrap_or_default(),
-                        is_updatable: is_updatable_str == "YES",
+                        is_updatable,
                     });
                 }
             }
@@ -197,17 +197,17 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for col_row in col_rows {
             let col_name: String = col_row.get_string("column_name");
-            let data_type_str: String = col_row.get_string("data_type");
-            let is_nullable_str: String = col_row.get_string("is_nullable");
+            let data_type = map_data_type(
+                col_row.get_str("data_type"),
+                col_row.get_opt_i32("character_maximum_length"),
+            );
+            let is_nullable = col_row.get_str("is_nullable") == "YES";
             let column_default: Option<String> = col_row.get_opt_string("column_default");
-            let char_len: Option<i32> = col_row.get_opt_i32("character_maximum_length");
-
-            let data_type = map_data_type(&data_type_str, char_len);
 
             columns.push(Column {
                 name: col_name,
                 data_type,
-                is_nullable: is_nullable_str == "YES",
+                is_nullable,
                 default_value: column_default,
                 comment: None,
             });
@@ -526,7 +526,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let increment: i64 = row.get_i64("increment");
             let min_value: i64 = row.get_i64("minimum_value");
             let max_value: i64 = row.get_i64("maximum_value");
-            let cycle_option: String = row.get_string("cycle_option");
+            let cycle = row.get_str("cycle_option") == "YES";
             let oid: u32 = row.get_u32("oid");
 
             let schema = schemas_map
@@ -544,7 +544,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 increment_by: increment,
                 min_value,
                 max_value,
-                cycle: cycle_option == "YES",
+                cycle,
             });
         }
 
@@ -573,10 +573,15 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
         for row in rows {
             let schema_name: Option<String> = row.try_get_string("routine_schema").ok();
             let routine_name: Option<String> = row.try_get_string("routine_name").ok();
-            let routine_type: Option<String> = row.try_get_string("routine_type").ok();
+            let is_procedure = row
+                .try_get_str("routine_type")
+                .is_ok_and(|t| t == "PROCEDURE");
             let return_type: Option<String> = row.try_get_string("return_type").ok();
             let definition: Option<String> = row.try_get_string("routine_definition").ok();
-            let language: Option<String> = row.try_get_string("external_language").ok();
+            let language = row
+                .try_get_str("external_language")
+                .unwrap_or("sql")
+                .to_string();
             let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
@@ -610,8 +615,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     argument_types,
                     return_type: return_type.unwrap_or_else(|| "void".to_string()),
                     definition: definition.unwrap_or_default(),
-                    language: language.unwrap_or_else(|| "sql".to_string()),
-                    is_procedure: routine_type.map(|t| t == "PROCEDURE").unwrap_or(false),
+                    language,
+                    is_procedure,
                 });
             }
         }

@@ -23,6 +23,12 @@ pub mod mock_client {
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string())
         }
+        fn get_str(&self, name: &str) -> &str {
+            self.data.get(name).unwrap().as_str().unwrap()
+        }
+        fn get_opt_str(&self, name: &str) -> Option<&str> {
+            self.data.get(name).and_then(|v| v.as_str())
+        }
         fn get_u32(&self, name: &str) -> u32 {
             self.data.get(name).unwrap().as_u64().unwrap() as u32
         }
@@ -68,6 +74,12 @@ pub mod mock_client {
                 .get(name)
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string())
+                .ok_or_else(|| "Not found".to_string())
+        }
+        fn try_get_str(&self, name: &str) -> Result<&str, String> {
+            self.data
+                .get(name)
+                .and_then(|v| v.as_str())
                 .ok_or_else(|| "Not found".to_string())
         }
         fn try_get_u32(&self, name: &str) -> Result<u32, String> {
