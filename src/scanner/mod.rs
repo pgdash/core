@@ -60,12 +60,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
         }
 
         for (schema_name, table_name, oid) in schemas_found {
-            let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            // Avoids cloning the schema_name string on every iteration
+            #[allow(clippy::map_entry)]
+            if !schemas_map.contains_key(&schema_name) {
+                schemas_map.insert(
+                    schema_name.clone(),
+                    Schema {
+                        name: schema_name.clone(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = schemas_map.get_mut(&schema_name).unwrap();
 
             info!("running scan tasks for table: {}", table_name);
             let (col_res, con_res, idx_res, trig_res) = tokio::join!(
@@ -134,12 +140,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     let is_updatable_str: String = row.get_string("is_updatable");
                     let oid: u32 = row.get_u32("oid");
 
-                    let schema = schemas_map
-                        .entry(schema_name.clone())
-                        .or_insert_with(|| Schema {
-                            name: schema_name.clone(),
-                            ..Default::default()
-                        });
+                    // Avoids cloning the schema_name string on every iteration
+                    #[allow(clippy::map_entry)]
+                    if !schemas_map.contains_key(&schema_name) {
+                        schemas_map.insert(
+                            schema_name.clone(),
+                            Schema {
+                                name: schema_name.clone(),
+                                ..Default::default()
+                            },
+                        );
+                    }
+                    let schema = schemas_map.get_mut(&schema_name).unwrap();
 
                     schema.views.push(View {
                         oid,
@@ -276,7 +288,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
+                .entry(name)
                 .or_insert_with(|| ConstraintGroup {
                     ctype,
                     local_cols: Vec::new(),
@@ -477,12 +489,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let variants: Vec<String> = row.get_vec_string("variants");
             let oid: u32 = row.get_u32("enum_oid");
 
-            let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            // Avoids cloning the schema_name string on every iteration
+            #[allow(clippy::map_entry)]
+            if !schemas_map.contains_key(&schema_name) {
+                schemas_map.insert(
+                    schema_name.clone(),
+                    Schema {
+                        name: schema_name.clone(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = schemas_map.get_mut(&schema_name).unwrap();
 
             schema.enums.push(EnumType {
                 oid,
@@ -529,12 +547,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let cycle_option: String = row.get_string("cycle_option");
             let oid: u32 = row.get_u32("oid");
 
-            let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
+            // Avoids cloning the schema_name string on every iteration
+            #[allow(clippy::map_entry)]
+            if !schemas_map.contains_key(&schema_name) {
+                schemas_map.insert(
+                    schema_name.clone(),
+                    Schema {
+                        name: schema_name.clone(),
+                        ..Default::default()
+                    },
+                );
+            }
+            let schema = schemas_map.get_mut(&schema_name).unwrap();
 
             schema.sequences.push(crate::schema::Sequence {
                 oid,
@@ -580,10 +604,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
-                    name: s_name.clone(),
-                    ..Default::default()
-                });
+                // Avoids cloning the schema_name string on every iteration
+                #[allow(clippy::map_entry)]
+                if !schemas_map.contains_key(&s_name) {
+                    schemas_map.insert(
+                        s_name.clone(),
+                        Schema {
+                            name: s_name.clone(),
+                            ..Default::default()
+                        },
+                    );
+                }
+                let schema = schemas_map.get_mut(&s_name).unwrap();
 
                 let param_query = "
                     SELECT data_type
