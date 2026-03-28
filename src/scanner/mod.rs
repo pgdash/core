@@ -563,8 +563,14 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 data_type AS return_type,
                 routine_definition,
                 external_language,
-                (SELECT p.oid FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = routine_schema AND p.proname = routine_name LIMIT 1) as oid
-            FROM information_schema.routines
+                (SELECT p.oid FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = routine_schema AND p.proname = routine_name LIMIT 1) as oid,
+                ARRAY(
+                    SELECT data_type
+                    FROM information_schema.parameters p
+                    WHERE p.specific_schema = r.specific_schema AND p.specific_name = r.specific_name
+                    ORDER BY ordinal_position
+                ) as argument_types
+            FROM information_schema.routines r
             WHERE routine_schema NOT IN ('information_schema', 'pg_catalog')
         ";
 
@@ -578,30 +584,13 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let definition: Option<String> = row.try_get_string("routine_definition").ok();
             let language: Option<String> = row.try_get_string("external_language").ok();
             let oid: Option<u32> = row.try_get_u32("oid").ok();
+            let argument_types: Vec<String> = row.get_vec_string("argument_types");
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
                 let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
                     name: s_name.clone(),
                     ..Default::default()
                 });
-
-                let param_query = "
-                    SELECT data_type
-                    FROM information_schema.parameters
-                    WHERE specific_schema = $1 AND specific_name = (
-                        SELECT specific_name
-                        FROM information_schema.routines
-                        WHERE routine_schema = $1 AND routine_name = $2
-                        LIMIT 1
-                    )
-                    ORDER BY ordinal_position
-                ";
-
-                let param_rows = self.client.query(param_query, &[&s_name, &r_name]).await?;
-                let argument_types = param_rows
-                    .iter()
-                    .map(|r| r.get_string("data_type"))
-                    .collect();
 
                 schema.functions.push(Function {
                     oid: oid.unwrap_or(0),
@@ -985,15 +974,9 @@ mod tests {
                     "return_type": "numeric",
                     "routine_definition": "BEGIN RETURN amount * 0.2; END;",
                     "external_language": "plpgsql",
-                    "oid": 5000
+                    "oid": 5000,
+                    "argument_types": ["numeric"]
                 }
-            ]),
-        );
-
-        mock.add_response(
-            "information_schema.parameters",
-            json!([
-                { "data_type": "numeric" }
             ]),
         );
 
