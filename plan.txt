@@ -1,0 +1,2 @@
+N+1 query in `scan_functions`.
+Currently, `scan_functions` fetches routines, and for each routine, it runs a separate query to fetch its parameters. This is a classic N+1 query problem.
