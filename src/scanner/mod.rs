@@ -60,13 +60,6 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
         }
 
         for (schema_name, table_name, oid) in schemas_found {
-            let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
-                    ..Default::default()
-                });
-
             info!("running scan tasks for table: {}", table_name);
             let (col_res, con_res, idx_res, trig_res) = tokio::join!(
                 self.scan_columns(&schema_name, &table_name),
@@ -104,10 +97,17 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 vec![]
             });
 
+            let schema = schemas_map
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
+                    ..Default::default()
+                });
+
             schema.tables.push(Table {
                 oid,
                 name: table_name,
-                schema_name: schema_name.clone(),
+                schema_name: schema.name.clone(),
                 columns,
                 indexes,
                 constraints,
@@ -135,16 +135,16 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     let oid: u32 = row.get_u32("oid");
 
                     let schema = schemas_map
-                        .entry(schema_name.clone())
-                        .or_insert_with(|| Schema {
-                            name: schema_name.clone(),
+                        .entry(schema_name)
+                        .or_insert_with_key(|k| Schema {
+                            name: k.clone(),
                             ..Default::default()
                         });
 
                     schema.views.push(View {
                         oid,
                         name: view_name,
-                        schema_name: schema_name.clone(),
+                        schema_name: schema.name.clone(),
                         definition: definition.unwrap_or_default(),
                         is_updatable: is_updatable_str == "YES",
                     });
@@ -276,8 +276,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
-                .or_insert_with(|| ConstraintGroup {
+                .entry(name)
+                .or_insert_with_key(|_k| ConstraintGroup {
                     ctype,
                     local_cols: Vec::new(),
                     foreign_schema,
@@ -478,16 +478,16 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: u32 = row.get_u32("enum_oid");
 
             let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
             schema.enums.push(EnumType {
                 oid,
                 name: enum_name,
-                schema_name,
+                schema_name: schema.name.clone(),
                 variants,
             });
         }
@@ -530,16 +530,16 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: u32 = row.get_u32("oid");
 
             let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
             schema.sequences.push(crate::schema::Sequence {
                 oid,
                 name,
-                schema_name,
+                schema_name: schema.name.clone(),
                 start_value,
                 increment_by: increment,
                 min_value,
@@ -580,11 +580,6 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
-                    name: s_name.clone(),
-                    ..Default::default()
-                });
-
                 let param_query = "
                     SELECT data_type
                     FROM information_schema.parameters
@@ -603,10 +598,15 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     .map(|r| r.get_string("data_type"))
                     .collect();
 
+                let schema = schemas_map.entry(s_name).or_insert_with_key(|k| Schema {
+                    name: k.clone(),
+                    ..Default::default()
+                });
+
                 schema.functions.push(Function {
                     oid: oid.unwrap_or(0),
                     name: r_name,
-                    schema_name: s_name,
+                    schema_name: schema.name.clone(),
                     argument_types,
                     return_type: return_type.unwrap_or_else(|| "void".to_string()),
                     definition: definition.unwrap_or_default(),
