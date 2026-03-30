@@ -13,3 +13,7 @@ These small changes can yield massive performance gains, especially inside loops
 
 ## Zero-Copy Deserialization with tokio-postgres
 The `tokio-postgres` library's `Row::get` and `Row::try_get` methods allow fetching `TEXT` or `VARCHAR` fields as borrowed string slices (`&str`). This is a zero-copy operation that avoids heap-allocating `String`s. By avoiding allocations for intermediate variables (like type definitions or flags in information_schema queries) that only need to be parsed or evaluated (e.g., checking `== "YES"` or mapping to an enum via `&str`), we can significantly speed up the schema scanning process and minimize heap allocations.
+- To avoid N+1 query problems when scanning PostgreSQL schemas, push secondary lookups into the main query via correlated  subqueries and extract them in Rust using  if supported by the DatabaseRow trait.
+- Eliminate unnecessary `.clone()` calls when inserting keys into a `HashMap` by using the `.entry(key).or_insert_with_key(|k| ...)` API, which leverages the already-owned key instance instead of eagerly cloning it for value creation.
+- To avoid N+1 query problems when scanning PostgreSQL schemas, push secondary lookups into the main query via correlated ARRAY(SELECT ...) subqueries and extract them in Rust using row.get_vec_string() if supported by the DatabaseRow trait.
+- Eliminate unnecessary .clone() calls when inserting keys into a HashMap by using the .entry(key).or_insert_with_key(|k| ...) API, which leverages the already-owned key instance instead of eagerly cloning it for value creation.
