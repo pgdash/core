@@ -339,7 +339,9 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let clause: String = row.get_string("check_clause");
             let column: Option<String> = row.get_opt_string("column_name");
 
-            let entry = check_map.entry(name).or_insert_with(|| (clause, Vec::new()));
+            let entry = check_map
+                .entry(name)
+                .or_insert_with(|| (clause, Vec::new()));
             if let Some(col) = column {
                 entry.1.push(col);
             }
@@ -602,7 +604,10 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     ORDER BY ordinal_position
                 ";
 
-                let param_rows = self.client.query(param_query, &[&s_name_clone, &r_name]).await?;
+                let param_rows = self
+                    .client
+                    .query(param_query, &[&s_name_clone, &r_name])
+                    .await?;
                 let argument_types = param_rows
                     .iter()
                     .map(|r| r.get_string("data_type"))
