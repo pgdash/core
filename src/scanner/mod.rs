@@ -61,53 +61,54 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for (schema_name, table_name, oid) in schemas_found {
             let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
             info!("running scan tasks for table: {}", table_name);
             let (col_res, con_res, idx_res, trig_res) = tokio::join!(
-                self.scan_columns(&schema_name, &table_name),
-                self.scan_constraints(&schema_name, &table_name),
-                self.scan_indexes(&schema_name, &table_name),
-                self.scan_triggers(&schema_name, &table_name),
+                self.scan_columns(&schema.name, &table_name),
+                self.scan_constraints(&schema.name, &table_name),
+                self.scan_indexes(&schema.name, &table_name),
+                self.scan_triggers(&schema.name, &table_name),
             );
 
             let columns = col_res.unwrap_or_else(|e| {
                 warn!(
                     "error scanning columns for {}.{}: {:?}",
-                    schema_name, table_name, e
+                    schema.name, table_name, e
                 );
                 vec![]
             });
             let constraints = con_res.unwrap_or_else(|e| {
                 warn!(
                     "error scanning constraints for {}.{}: {:?}",
-                    schema_name, table_name, e
+                    schema.name, table_name, e
                 );
                 vec![]
             });
             let indexes = idx_res.unwrap_or_else(|e| {
                 warn!(
                     "error scanning indexes for {}.{}: {:?}",
-                    schema_name, table_name, e
+                    schema.name, table_name, e
                 );
                 vec![]
             });
             let triggers = trig_res.unwrap_or_else(|e| {
                 warn!(
                     "error scanning triggers for {}.{}: {:?}",
-                    schema_name, table_name, e
+                    schema.name, table_name, e
                 );
                 vec![]
             });
 
+            let s_name = schema.name.clone();
             schema.tables.push(Table {
                 oid,
                 name: table_name,
-                schema_name: schema_name.clone(),
+                schema_name: s_name,
                 columns,
                 indexes,
                 constraints,
@@ -135,16 +136,17 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     let oid: u32 = row.get_u32("oid");
 
                     let schema = schemas_map
-                        .entry(schema_name.clone())
-                        .or_insert_with(|| Schema {
-                            name: schema_name.clone(),
+                        .entry(schema_name)
+                        .or_insert_with_key(|k| Schema {
+                            name: k.clone(),
                             ..Default::default()
                         });
 
+                    let s_name = schema.name.clone();
                     schema.views.push(View {
                         oid,
                         name: view_name,
-                        schema_name: schema_name.clone(),
+                        schema_name: s_name,
                         definition: definition.unwrap_or_default(),
                         is_updatable: is_updatable_str == "YES",
                     });
@@ -267,24 +269,24 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for row in rows {
             let name: String = row.get_string("constraint_name");
-            let ctype: String = row.get_string("constraint_type");
             let local_col: String = row.get_string("local_column");
-            let foreign_schema: Option<String> = row.get_opt_string("foreign_schema");
-            let foreign_table: Option<String> = row.get_opt_string("foreign_table");
             let foreign_col: Option<String> = row.get_opt_string("foreign_column");
-            let update_rule: Option<String> = row.get_opt_string("update_rule");
-            let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
-                .or_insert_with(|| ConstraintGroup {
-                    ctype,
-                    local_cols: Vec::new(),
-                    foreign_schema,
-                    foreign_table,
-                    update_action: update_rule.map(map_referential_action),
-                    delete_action: delete_rule.map(map_referential_action),
-                    foreign_cols: Vec::new(),
+                .entry(name)
+                .or_insert_with(|| {
+                    let update_rule: Option<String> = row.get_opt_string("update_rule");
+                    let delete_rule: Option<String> = row.get_opt_string("delete_rule");
+
+                    ConstraintGroup {
+                        ctype: row.get_string("constraint_type"),
+                        local_cols: Vec::new(),
+                        foreign_schema: row.get_opt_string("foreign_schema"),
+                        foreign_table: row.get_opt_string("foreign_table"),
+                        update_action: update_rule.map(map_referential_action),
+                        delete_action: delete_rule.map(map_referential_action),
+                        foreign_cols: Vec::new(),
+                    }
                 });
 
             entry.local_cols.push(local_col);
@@ -333,10 +335,9 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             .await?
         {
             let name: String = row.get_string("constraint_name");
-            let clause: String = row.get_string("check_clause");
             let column: Option<String> = row.get_opt_string("column_name");
 
-            let entry = check_map.entry(name).or_insert((clause, Vec::new()));
+            let entry = check_map.entry(name).or_insert_with(|| (row.get_string("check_clause"), Vec::new()));
             if let Some(col) = column {
                 entry.1.push(col);
             }
@@ -478,16 +479,17 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: u32 = row.get_u32("enum_oid");
 
             let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
+            let s_name = schema.name.clone();
             schema.enums.push(EnumType {
                 oid,
                 name: enum_name,
-                schema_name,
+                schema_name: s_name,
                 variants,
             });
         }
@@ -530,16 +532,17 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: u32 = row.get_u32("oid");
 
             let schema = schemas_map
-                .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .entry(schema_name)
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
+            let s_name = schema.name.clone();
             schema.sequences.push(crate::schema::Sequence {
                 oid,
                 name,
-                schema_name,
+                schema_name: s_name,
                 start_value,
                 increment_by: increment,
                 min_value,
@@ -580,8 +583,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
-                    name: s_name.clone(),
+                let schema = schemas_map.entry(s_name).or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
@@ -597,7 +600,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     ORDER BY ordinal_position
                 ";
 
-                let param_rows = self.client.query(param_query, &[&s_name, &r_name]).await?;
+                let s_name_clone = schema.name.clone();
+                let param_rows = self.client.query(param_query, &[&s_name_clone, &r_name]).await?;
                 let argument_types = param_rows
                     .iter()
                     .map(|r| r.get_string("data_type"))
@@ -606,7 +610,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 schema.functions.push(Function {
                     oid: oid.unwrap_or(0),
                     name: r_name,
-                    schema_name: s_name,
+                    schema_name: s_name_clone,
                     argument_types,
                     return_type: return_type.unwrap_or_else(|| "void".to_string()),
                     definition: definition.unwrap_or_default(),
