@@ -272,22 +272,20 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let local_col: String = row.get_string("local_column");
             let foreign_col: Option<String> = row.get_opt_string("foreign_column");
 
-            let entry = constraint_map
-                .entry(name)
-                .or_insert_with(|| {
-                    let update_rule: Option<String> = row.get_opt_string("update_rule");
-                    let delete_rule: Option<String> = row.get_opt_string("delete_rule");
+            let entry = constraint_map.entry(name).or_insert_with(|| {
+                let update_rule: Option<String> = row.get_opt_string("update_rule");
+                let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
-                    ConstraintGroup {
-                        ctype: row.get_string("constraint_type"),
-                        local_cols: Vec::new(),
-                        foreign_schema: row.get_opt_string("foreign_schema"),
-                        foreign_table: row.get_opt_string("foreign_table"),
-                        update_action: update_rule.map(map_referential_action),
-                        delete_action: delete_rule.map(map_referential_action),
-                        foreign_cols: Vec::new(),
-                    }
-                });
+                ConstraintGroup {
+                    ctype: row.get_string("constraint_type"),
+                    local_cols: Vec::new(),
+                    foreign_schema: row.get_opt_string("foreign_schema"),
+                    foreign_table: row.get_opt_string("foreign_table"),
+                    update_action: update_rule.map(map_referential_action),
+                    delete_action: delete_rule.map(map_referential_action),
+                    foreign_cols: Vec::new(),
+                }
+            });
 
             entry.local_cols.push(local_col);
             if let Some(fcol) = foreign_col {
@@ -337,7 +335,9 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let name: String = row.get_string("constraint_name");
             let column: Option<String> = row.get_opt_string("column_name");
 
-            let entry = check_map.entry(name).or_insert_with(|| (row.get_string("check_clause"), Vec::new()));
+            let entry = check_map
+                .entry(name)
+                .or_insert_with(|| (row.get_string("check_clause"), Vec::new()));
             if let Some(col) = column {
                 entry.1.push(col);
             }
@@ -601,7 +601,10 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 ";
 
                 let s_name_clone = schema.name.clone();
-                let param_rows = self.client.query(param_query, &[&s_name_clone, &r_name]).await?;
+                let param_rows = self
+                    .client
+                    .query(param_query, &[&s_name_clone, &r_name])
+                    .await?;
                 let argument_types = param_rows
                     .iter()
                     .map(|r| r.get_string("data_type"))
