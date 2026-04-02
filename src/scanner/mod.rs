@@ -601,7 +601,10 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                     ORDER BY ordinal_position
                 ";
 
-                let param_rows = self.client.query(param_query, &[&s_name_ref, &r_name]).await?;
+                let param_rows = self
+                    .client
+                    .query(param_query, &[&s_name_ref, &r_name])
+                    .await?;
                 let argument_types = param_rows
                     .iter()
                     .map(|r| r.get_string("data_type"))
