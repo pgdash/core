@@ -267,23 +267,18 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
         for row in rows {
             let name: String = row.get_string("constraint_name");
-            let ctype: String = row.get_string("constraint_type");
             let local_col: String = row.get_string("local_column");
-            let foreign_schema: Option<String> = row.get_opt_string("foreign_schema");
-            let foreign_table: Option<String> = row.get_opt_string("foreign_table");
             let foreign_col: Option<String> = row.get_opt_string("foreign_column");
-            let update_rule: Option<String> = row.get_opt_string("update_rule");
-            let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
+                .entry(name)
                 .or_insert_with(|| ConstraintGroup {
-                    ctype,
+                    ctype: row.get_string("constraint_type"),
                     local_cols: Vec::new(),
-                    foreign_schema,
-                    foreign_table,
-                    update_action: update_rule.map(map_referential_action),
-                    delete_action: delete_rule.map(map_referential_action),
+                    foreign_schema: row.get_opt_string("foreign_schema"),
+                    foreign_table: row.get_opt_string("foreign_table"),
+                    update_action: row.get_opt_string("update_rule").map(map_referential_action),
+                    delete_action: row.get_opt_string("delete_rule").map(map_referential_action),
                     foreign_cols: Vec::new(),
                 });
 
@@ -333,10 +328,11 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             .await?
         {
             let name: String = row.get_string("constraint_name");
-            let clause: String = row.get_string("check_clause");
             let column: Option<String> = row.get_opt_string("column_name");
 
-            let entry = check_map.entry(name).or_insert((clause, Vec::new()));
+            let entry = check_map.entry(name).or_insert_with(|| {
+                (row.get_string("check_clause"), Vec::new())
+            });
             if let Some(col) = column {
                 entry.1.push(col);
             }
