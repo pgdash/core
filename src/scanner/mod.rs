@@ -78,10 +78,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             );
 
             let columns = col_res.unwrap_or_else(|e| {
-                warn!(
-                    "error scanning columns for {}.{}: {:?}",
-                    sn, table_name, e
-                );
+                warn!("error scanning columns for {}.{}: {:?}", sn, table_name, e);
                 vec![]
             });
             let constraints = con_res.unwrap_or_else(|e| {
@@ -92,17 +89,11 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
                 vec![]
             });
             let indexes = idx_res.unwrap_or_else(|e| {
-                warn!(
-                    "error scanning indexes for {}.{}: {:?}",
-                    sn, table_name, e
-                );
+                warn!("error scanning indexes for {}.{}: {:?}", sn, table_name, e);
                 vec![]
             });
             let triggers = trig_res.unwrap_or_else(|e| {
-                warn!(
-                    "error scanning triggers for {}.{}: {:?}",
-                    sn, table_name, e
-                );
+                warn!("error scanning triggers for {}.{}: {:?}", sn, table_name, e);
                 vec![]
             });
 
