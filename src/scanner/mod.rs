@@ -62,8 +62,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
         for (schema_name, table_name, oid) in schemas_found {
             let schema = schemas_map
                 .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
@@ -136,8 +136,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
                     let schema = schemas_map
                         .entry(schema_name.clone())
-                        .or_insert_with(|| Schema {
-                            name: schema_name.clone(),
+                        .or_insert_with_key(|k| Schema {
+                            name: k.clone(),
                             ..Default::default()
                         });
 
@@ -276,7 +276,7 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let delete_rule: Option<String> = row.get_opt_string("delete_rule");
 
             let entry = constraint_map
-                .entry(name.clone())
+                .entry(name)
                 .or_insert_with(|| ConstraintGroup {
                     ctype,
                     local_cols: Vec::new(),
@@ -479,8 +479,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
             let schema = schemas_map
                 .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
@@ -531,8 +531,8 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
 
             let schema = schemas_map
                 .entry(schema_name.clone())
-                .or_insert_with(|| Schema {
-                    name: schema_name.clone(),
+                .or_insert_with_key(|k| Schema {
+                    name: k.clone(),
                     ..Default::default()
                 });
 
@@ -580,10 +580,12 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let oid: Option<u32> = row.try_get_u32("oid").ok();
 
             if let (Some(s_name), Some(r_name)) = (schema_name, routine_name) {
-                let schema = schemas_map.entry(s_name.clone()).or_insert_with(|| Schema {
-                    name: s_name.clone(),
-                    ..Default::default()
-                });
+                let schema = schemas_map
+                    .entry(s_name.clone())
+                    .or_insert_with_key(|k| Schema {
+                        name: k.clone(),
+                        ..Default::default()
+                    });
 
                 let param_query = "
                     SELECT data_type
