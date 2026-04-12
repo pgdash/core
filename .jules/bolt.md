@@ -13,3 +13,7 @@ These small changes can yield massive performance gains, especially inside loops
 
 ## Zero-Copy Deserialization with tokio-postgres
 The `tokio-postgres` library's `Row::get` and `Row::try_get` methods allow fetching `TEXT` or `VARCHAR` fields as borrowed string slices (`&str`). This is a zero-copy operation that avoids heap-allocating `String`s. By avoiding allocations for intermediate variables (like type definitions or flags in information_schema queries) that only need to be parsed or evaluated (e.g., checking `== "YES"` or mapping to an enum via `&str`), we can significantly speed up the schema scanning process and minimize heap allocations.
+
+## HashMap Entry API Optimizations
+When inserting into a `HashMap` where the key is an owned string, using `.entry(key.clone()).or_insert_with(...)` causes an unconditional heap allocation of the string even if the key already exists in the map.
+Instead, use `.entry(key).or_insert_with_key(|k| ...)` and pass the owned string directly by value. If the entry exists, the string is consumed but no additional allocation is made. If the entry does not exist, the key can be cloned inside the closure (e.g. `k.clone()`) to populate the value structure. This is an idiomatic Rust pattern to avoid expensive allocations in hot paths like scanning large numbers of schema elements.
