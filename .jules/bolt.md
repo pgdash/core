@@ -13,3 +13,6 @@ These small changes can yield massive performance gains, especially inside loops
 
 ## Zero-Copy Deserialization with tokio-postgres
 The `tokio-postgres` library's `Row::get` and `Row::try_get` methods allow fetching `TEXT` or `VARCHAR` fields as borrowed string slices (`&str`). This is a zero-copy operation that avoids heap-allocating `String`s. By avoiding allocations for intermediate variables (like type definitions or flags in information_schema queries) that only need to be parsed or evaluated (e.g., checking `== "YES"` or mapping to an enum via `&str`), we can significantly speed up the schema scanning process and minimize heap allocations.
+
+## HashMap Entry Allocation Avoidance
+When checking or inserting into a `HashMap`, using `.entry(key.clone()).or_insert_with(|| ...)` causes an upfront `String` clone even on cache hits. To avoid this unnecessary allocation, use the `Entry::or_insert_with_key(|k| ...)` API and pass the owned `String` key by value to `.entry(key)`. This consumes the key directly without upfront cloning on cache hits, avoids double lookups, and satisfies Clippy natively without needing `#[allow(clippy::map_entry)]`. If the consumed key is needed subsequently, borrow it back from the entry closure or map entry.
