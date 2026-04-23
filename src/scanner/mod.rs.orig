@@ -402,13 +402,13 @@ impl<'a, C: DatabaseClient> PostgresScanner<'a, C> {
             let columns: Vec<String> = row.get_vec_string("index_columns");
 
             indexes.push(Index {
-                name: name.to_string(),
-                index_type: index_type.to_string(),
+                name,
+                index_type,
                 is_unique,
                 is_primary_key: is_primary,
                 columns,
                 partial_condition,
-                definition: definition.to_string(),
+                definition,
             });
         }
 
