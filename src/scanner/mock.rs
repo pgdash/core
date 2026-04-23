@@ -53,6 +53,21 @@ pub mod mock_client {
         fn get_opt_bool(&self, name: &str) -> Option<bool> {
             self.data.get(name).and_then(|v| v.as_bool())
         }
+        fn get_str<'a>(&'a self, name: &str) -> &'a str {
+            self.data.get(name).unwrap().as_str().unwrap()
+        }
+        fn get_opt_str<'a>(&'a self, name: &str) -> Option<&'a str> {
+            self.data.get(name).and_then(|v| v.as_str())
+        }
+        fn try_get_str<'a>(&'a self, name: &str) -> Result<&'a str, String> {
+            self.data
+                .get(name)
+                .ok_or_else(|| format!("Column {} not found", name))
+                .and_then(|v| {
+                    v.as_str()
+                        .ok_or_else(|| format!("Column {} is not a string", name))
+                })
+        }
         fn get_vec_string(&self, name: &str) -> Vec<String> {
             self.data
                 .get(name)
