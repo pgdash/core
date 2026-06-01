@@ -63,6 +63,18 @@ pub mod mock_client {
                 .map(|v| v.as_str().unwrap().to_string())
                 .collect()
         }
+        fn get_str(&self, name: &str) -> &str {
+            self.data.get(name).unwrap().as_str().unwrap()
+        }
+        fn get_opt_str(&self, name: &str) -> Option<&str> {
+            self.data.get(name).and_then(|v| v.as_str())
+        }
+        fn try_get_str(&self, name: &str) -> Result<&str, String> {
+            self.data
+                .get(name)
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| "Not found".to_string())
+        }
         fn try_get_string(&self, name: &str) -> Result<String, String> {
             self.data
                 .get(name)
